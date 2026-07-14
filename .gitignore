@@ -1,0 +1,9 @@
+# Python bytecode/cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local runtime/test artifacts
+.env
+.venv/
+*.log
