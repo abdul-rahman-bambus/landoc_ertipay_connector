@@ -1,0 +1,174 @@
+<odoo>
+    <record id="view_crm_lead_form_inherit_expenses" model="ir.ui.view">
+        <field name="name">crm.lead.form.expenses</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//widget[@name='web_ribbon']" position="after">
+                <widget name="web_ribbon" title="PROFIT" bg_color="text-bg-success"
+                        invisible="ticket_financial_status != 'profit'"/>
+                <widget name="web_ribbon" title="LOSS" bg_color="text-bg-danger"
+                        invisible="ticket_financial_status != 'loss'"/>
+                <widget name="web_ribbon" title="PENDING" bg_color="text-bg-warning"
+                        invisible="ticket_financial_status != 'pending'"/>
+                <widget name="web_ribbon" title="NO ACTIVITY" bg_color="text-bg-secondary"
+                        invisible="ticket_financial_status != 'not_started'"/>
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+
+                <page string="Financial" invisible="not sale_order_ids or type != 'opportunity'" groups="custom_landoc.group_landoc_manager,custom_landoc.group_landoc_accounting_user,custom_landoc.group_landoc_accounting_team_lead_user">
+                    <!-- ACTIONS -->
+                    <group string="Actions" class="mt-6">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button name="action_confirm_quotation"
+                                    type="object" invisible="not can_confirm_quotation"
+                                    string="Confirm Quotation"/>
+
+                            <button name="action_create_invoice"
+                                    type="object" invisible="not can_create_invoice"
+                                    string="Create Invoice"/>
+
+                            <button name="action_register_payment"
+                                    type="object" invisible="not can_register_payment"
+                                    string="Register Payment"
+                                    class="btn-primary"/>
+
+                            <button name="action_create_vendor_bills"
+                                    type="object" invisible="not can_show_vendor"
+                                    string="Add Vendor Bill"/>
+
+                            <button name="action_register_vendor_payment"
+                                    type="object" invisible="not can_show_vendor or not can_register_vendor_payment"
+                                    string="Pay Vendor"/>
+
+                            <button name="action_log_expense"
+                                    type="object"
+                                    string="Add Expense"/>
+
+                        </div>
+                    </group>
+
+
+                    <group string="Payments">
+
+                        <notebook>
+                            <page string="Quotations" invisible="not sale_order_ids">
+                                <!-- SALE ORDERS -->
+                                <group>
+                                    <field name="name" invisible="1"/>
+                                    <field name="id" invisible="1"/>
+                                    <field name="partner_id" invisible="1"/>
+                                    <field name="sale_order_ids" widget="one2many_list" nolabel="1" create="0"
+                                           readonly="1"
+                                           context="{'default_opportunity_id': id, 'default_origin': name, 'default_partner_id': partner_id}"
+                                           delete="0"/>
+                                </group>
+                            </page>
+
+                            <page string="Invoices" invisible="not payment_move_ids">
+                                <!-- INVOICES -->
+                                <group>
+                                    <field name="payment_move_ids"
+                                           nolabel="1"
+                                           readonly="1"
+                                           create="0" delete="0"
+                                           context="{'default_lead_id': id}"
+                                           options="{'no_open': True}"/>
+                                </group>
+
+                            </page>
+
+                            <page string="Vendor Bills" invisible="not can_show_vendor or not vendor_payment_move_ids">
+                                <!-- VENDOR BILLS -->
+                                <field name="can_show_vendor" invisible="1"/>
+                                <group>
+                                    <field name="vendor_payment_move_ids"
+                                           nolabel="1"
+                                           widget="one2many_list"
+                                           readonly="1"
+                                           create="0" delete="0"
+                                           context="{'default_lead_id': id}"/>
+                                </group>
+
+                            </page>
+
+                            <page string="Landoc Expenses" invisible="not expense_ids">
+
+                                <!-- EXPENSES -->
+                                <group>
+                                    <field name="expense_ids" nolabel="1" context="{'default_lead_id': id}">
+                                        <list create="0" delete="0">
+                                            <field name="date"/>
+                                            <field name="name"/>
+                                            <field name="employee_id"/>
+                                            <field name="payment_mode"/>
+                                            <field name="total_amount"/>
+                                            <field name="company_currency_id" column_invisible="1"/>
+                                            <field name="state"/>
+                                            <field name="analytic_distribution" widget="analytic_distribution"
+                                                   optional="hide"/>
+                                        </list>
+                                    </field>
+                                </group>
+
+                            </page>
+                        </notebook>
+                    </group>
+
+                    <!-- FINANCIAL SUMMARY -->
+                    <group string="Financial Summary" invisible="not sale_order_ids">
+                        <group>
+                            <!-- ================= REVENUE ================= -->
+                            <group string="Revenue" col="2">
+
+                                <field name="ticket_invoiced_amount"
+                                       readonly="1"/>
+
+                                <field name="ticket_collected_amount"
+                                       readonly="1"
+                                       decoration-success="ticket_outstanding_amount == 0"
+                                       decoration-warning="ticket_outstanding_amount &gt; 0"/>
+
+                                <field name="ticket_outstanding_amount"
+                                       readonly="1"
+                                       decoration-success="ticket_outstanding_amount == 0"
+                                       decoration-danger="ticket_outstanding_amount &gt; 0"
+                                       decoration-info="ticket_outstanding_amount &lt; 0"/>
+
+                            </group>
+
+                            <!-- ============== COST & MARGIN =============== -->
+                            <group string="Cost &amp; Margin" col="2">
+
+                                <field name="ticket_expense_amount"
+                                       readonly="1"
+                                       decoration-danger="ticket_expense_amount &gt; 0"/>
+
+                                <field name="ticket_accounting_margin"
+                                       readonly="1"
+                                       decoration-success="ticket_accounting_margin &gt;= 0"
+                                       decoration-danger="ticket_accounting_margin &lt; 0"/>
+
+                                <field name="ticket_cash_margin"
+                                       readonly="1"
+                                       decoration-success="ticket_cash_margin &gt;= 0"
+                                       decoration-danger="ticket_cash_margin &lt; 0"/>
+
+                            </group>
+                        </group>
+
+                        <!-- ============ COLLECTION PROGRESS ============= -->
+                        <group string="Collection Progress">
+                            <field name="ticket_collection_ratio"
+                                   widget="progressbar"/>
+                        </group>
+
+                    </group>
+                </page>
+
+            </xpath>
+        </field>
+    </record>
+</odoo>

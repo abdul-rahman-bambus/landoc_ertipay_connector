@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_res_trans_lang,access.res.trans.lang,model_res_trans_lang,,1,1,1,1
+access_audio_converter,access.audio.converter,model_audio_converter,,1,1,1,1

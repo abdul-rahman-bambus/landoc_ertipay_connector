@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Form View -->
+    <record id="api_log_form_view" model="ir.ui.view">
+        <field name="name">whatsapp.api.log.form</field>
+        <field name="model">whatsapp.api.log</field>
+        <field name="arch" type="xml">
+            <form string="API Log" create="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                        <group>
+                            <field name="error_msg"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree View -->
+    <record id="api_log_tree_view" model="ir.ui.view">
+        <field name="name">whatsapp.api.log.tree</field>
+        <field name="model">whatsapp.api.log</field>
+        <field name="arch" type="xml">
+            <list string="API Log" create="0" default_order="create_date dsc">
+                <field name="create_date"/>
+                <field name="name"/>
+                <field name="error_msg"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="whatsapp_api_log_action" model="ir.actions.act_window">
+        <field name="name">Whatsapp API Log Action</field>
+        <field name="res_model">whatsapp.api.log</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menu Items -->
+    <menuitem id="error_log_api" name="API Log" parent="whatsapp_business.menu_whatsapp_business_root" sequence="4"
+              action="whatsapp_api_log_action"/>
+
+</odoo>
+

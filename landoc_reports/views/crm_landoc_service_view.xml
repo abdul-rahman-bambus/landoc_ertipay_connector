@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_crm_landoc_service_form_inherit" model="ir.ui.view">
+            <field name="name">view.crm.landoc.service.form.inherit</field>
+            <field name="model">crm.landoc.service</field>
+            <field name="inherit_id" ref="landoc_services.view_crm_landoc_service_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/div[@name='button_box']" position="inside">
+                    <button
+                            name="action_print_ec"
+                            type="object"
+                            icon="fa-print"
+                            string="Encumbrance Certificate"
+                            class="btn-primary"
+                            invisible="not is_ec"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

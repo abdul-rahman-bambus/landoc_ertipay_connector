@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Form: Property Type -->
+        <record id="property_type_form_view" model="ir.ui.view">
+            <field name="name">property.type.form</field>
+            <field name="model">property.type</field>
+            <field name="arch" type="xml">
+                <form string="Property Type">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Checklists">
+                                <field name="checklist_line">
+                                    <list editable="bottom">
+                                        <field name="name" width="200"/>
+                                        <field name="is_data_required" width="100" widget="boolean_toggle"/>
+                                        <field name="is_attachment_required" width="100" widget="boolean_toggle"/>
+                                    </list>
+                                </field>
+
+                            </page>
+                        </notebook>
+
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- List: Property Type -->
+        <record id="property_type_list_view" model="ir.ui.view">
+            <field name="name">property.type.list</field>
+            <field name="model">property.type</field>
+            <field name="arch" type="xml">
+                <list string="Property Type">
+                    <field name="name"/>
+                </list>
+            </field>
+        </record>
+
+
+        <!-- Window: Action -->
+        <record id="property_type_act_window" model="ir.actions.act_window">
+            <field name="name">Property Type</field>
+            <field name="res_model">property.type</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    There is no examples click here to add new ModelTitle.
+                </p>
+            </field>
+        </record>
+
+        <!-- Menuitem -->
+        <menuitem name="Property Type" id="property_type_menu" parent="master_data_main_menu" groups="custom_landoc.group_landoc_manager"
+                  action="property_type_act_window"/>
+
+    </data>
+</odoo>
+

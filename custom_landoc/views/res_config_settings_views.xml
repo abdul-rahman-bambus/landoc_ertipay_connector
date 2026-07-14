@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="custom_landoc_res_config_settings_form" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.inherit.custom.landoc</field>
+            <field name="model">res.config.settings</field>
+            <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form" position="inside">
+                    <app data-string="Landoc" string="Landoc" name="custom_landoc" groups="custom_landoc.group_landoc_manager">
+                        <block title="Vendor Bills">
+                            <setting help="Default vendor for vendor bill."
+                                     string="Default Vendor">
+                                <field name="landoc_vendor_id"/>
+                            </setting>
+                        </block>
+
+                        <block title="Checklist Details">
+                            <setting string="No of Witness">
+                                <field name="no_witness"/>
+                            </setting>
+                        </block>
+
+                        <block title="CRM Configuration">
+                            <setting string="Government Link">
+                                <field name="government_link" widget="url"/>
+                            </setting>
+
+                            <setting string="Bot Default User">
+                                <field name="bot_user_id" options="{'no_create': True}" required="1"/>
+                            </setting>
+
+                            <setting string="External User" help="Service Booking Responsible User.">
+                                <field name="responsible_user_id" options="{'no_create': True}" required="1"/>
+                            </setting>
+
+                            <setting string="Bot Default Department">
+                                <field name="department_id" options="{'no_create': True}" required="1"/>
+                            </setting>
+                        </block>
+                    </app>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="action_custom_landoc_configuration" model="ir.actions.act_window">
+            <field name="name">Settings</field>
+            <field name="res_model">res.config.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+            <field name="context">{'module' : 'custom_landoc', 'bin_size': False}</field>
+        </record>
+
+        <menuitem id="menu_custom_landoc_global_settings" name="Settings"
+            parent="landoc_master_data" action="action_custom_landoc_configuration" groups="custom_landoc.group_landoc_manager"/>
+    </data>
+</odoo>

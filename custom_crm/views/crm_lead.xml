@@ -1,0 +1,865 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Form: Crm Lead -->
+        <record id="crm_lead_view_form_inherit" model="ir.ui.view">
+            <field name="name">custom.landoc.crm.lead.form</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form" position="attributes">
+                    <attribute name="create">0</attribute>
+                </xpath>
+                <!-- Form: Banner -->
+                <xpath expr="//header" position="before">
+                    <div invisible="type != 'opportunity'">
+                        <h5 class="text-center bg-success text-light">
+                            <field name="compute_next_step" invisible="not checklist_tracking_line or not compute_next_step"/>
+                            <p invisible="checklist_counts != 0 or compute_next_step">Create Checklist</p>
+                        </h5>
+                    </div>
+                </xpath>
+
+                <xpath expr="//header/button[@name='action_set_won_rainbowman']" position="attributes">
+                    <!-- Warning: Shouldn't  make space between groups or end of the groups. It may cause visibility issue. -->
+                    <attribute name="groups">custom_landoc.group_landoc_manager,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user</attribute>
+                </xpath>
+
+                <xpath expr="//header/button[@name='%(crm.crm_lead_lost_action)d']" position="attributes">
+                    <!-- Warning: Shouldn't  make space between groups or end of the groups. It may cause visibility issue. -->
+                    <attribute name="groups">custom_landoc.group_landoc_manager,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user</attribute>
+                </xpath>
+
+                <xpath expr="//header/button[@name='%(crm.action_crm_lead2opportunity_partner)d']"
+                       position="attributes">
+                    <!-- Warning: Shouldn't  make space between groups or end of the groups. It may cause visibility issue. -->
+                    <attribute name="groups">custom_landoc.group_landoc_manager,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user</attribute>
+                </xpath>
+
+                <xpath expr="//header/button[@name='toggle_active']" position="attributes">
+                    <!-- Warning: Shouldn't  make space between groups or end of the groups. It may cause visibility issue. -->
+                    <attribute name="groups">custom_landoc.group_landoc_manager,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user</attribute>
+                </xpath>
+
+                <xpath expr="//header/button[@name='%(crm.crm_lead_lost_action)d'][2]" position="attributes">
+                    <!-- Warning: Shouldn't  make space between groups or end of the groups. It may cause visibility issue. -->
+                    <attribute name="groups">custom_landoc.group_landoc_manager,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user</attribute>
+                </xpath>
+
+                <!-- Form: Buttons -->
+                <xpath expr="//field[@name='stage_id']" position="before">
+                    <button name="%(custom_crm.crm_department_transfer_action)d" string="Department Transfer"
+                            invisible="not active"
+                            type="action"
+                            title="Department Transfer"/>
+                    <field name="is_update_quotation_qty" invisible="1"/>
+                    <button name="action_update_quotation" groups="custom_landoc.group_landoc_legal_user,custom_landoc.group_landoc_legal_team_lead_user" string="Update Quotation" invisible="not is_update_quotation_qty" type="object" />
+                    <button name="action_previous" string="Previous"
+                            invisible="type != 'opportunity' or not checklist_tracking_line or not active or not previous_btn_visiblity"
+                            type="object"
+                            title="Previous"/>
+                    <field name="previous_btn_visiblity" invisible="1"/>
+                    <button name="action_next" string="Next" type="object"
+                            invisible="type != 'opportunity' or not active or checklist_dept_status == 'to_do' or checklist_dept_status == 'in_progress'"
+                            title="Next"/>
+                    <button name="action_create_checklist" string="Create Checklist" type="object"
+                            groups="custom_landoc.group_landoc_manager,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user"
+                            invisible="type != 'opportunity' or checklist_counts != 0 or not active or not visible_checklists_btn"
+                            title="Create Checklist"/>
+
+                    <!--      ******* Timer Starts ******            -->
+                    <!--     <field name="timer_start" invisible="1" nolabel="1"/>-->
+                    <!--     <field name="timer_pause" invisible="1"/>-->
+                    <!--     <field name="display_timer_start_primary" invisible="1"/>-->
+                    <!--     <field name="display_timer_stop" invisible="1"/>-->
+                    <!--     <field name="display_timer_pause" invisible="1"/>-->
+                    <!--     <field name="display_timer_resume" invisible="1"/>-->
+
+                    <!--       <button class="btn-primary" name="action_timer_start" type="object"-->
+                    <!--                            string="Start" title="Start timer" invisible="1" groups="custom_landoc.group_landoc_manager"-->
+                    <!--                            icon="fa-clock-o"/>-->
+                                        <!--   invisible="not display_timer_start_primary or type != 'opportunity' or not active or not checklist_tracking_line"-->
+                    <!--       <button class="btn-primary o_fsm_stop" name="action_timer_stop" type="object"-->
+                    <!--                            invisible="not display_timer_stop or type != 'opportunity' or not active"-->
+                    <!--                            string="Stop" title="Stop timer" groups="custom_landoc.group_landoc_manager"-->
+                    <!--                            icon="fa-clock-o"/>-->
+
+                    <!--        <button class="btn-secondary" name="action_timer_pause" type="object"-->
+                    <!--                            groups="custom_landoc.group_landoc_manager"-->
+                    <!--                            invisible="not display_timer_pause or type != 'opportunity' or not active"-->
+                    <!--                            string="Pause" title="Pause timer"/>-->
+                    <!--        <button class="btn-secondary" name="action_timer_resume" type="object"-->
+                    <!--                            groups="custom_landoc.group_landoc_manager"-->
+                    <!--                            invisible="not display_timer_resume or type != 'opportunity' or not active"-->
+                    <!--                            string="Resume" title="Resume timer"/>-->
+                    <!--         <field name="remaining_hours" invisible="1" widget="timesheet_uom"-->
+                    <!--                           class="text-primary me-auto h3 ms-2 ms-sm-0 fw-bold"/>-->
+                    <!--                 ******* Timer ends ******            -->
+                </xpath>
+
+                <!-- Form: Smart Buttons -->
+                <xpath expr="//sheet/div[@name='button_box']" position="inside">
+                    <button name="action_view_checklist"
+                            type="object"
+                            class="oe_stat_button"
+                            invisible="type != 'opportunity' or checklist_counts == 0 or not visible_checklists_btn"
+                            groups="custom_landoc.group_landoc_manager,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user"
+                            icon="fa-solid fa-book">
+                        <field name="checklist_counts" widget="statinfo" string="Checklists"/>
+                        <field name="visible_checklists_btn" invisible="1"/>
+                    </button>
+
+                    <!--   or service_booking_counts == 0-->
+                     <button name="action_view_service_booking"
+                            type="object"
+                            class="oe_stat_button"
+                            invisible="type != 'opportunity'"
+                            groups="custom_landoc.group_landoc_manager,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user,custom_landoc.group_landoc_external_user,custom_landoc.group_landoc_external_team_lead_user"
+                            icon="fa-solid fa-book">
+                        <field name="service_booking_counts" widget="statinfo" string="Service Booking"/>
+                    </button>
+
+                    <!--  Commenting smart buttons for some reason  -->
+                    <button type="object" class="oe_stat_button" invisible="type != 'opportunity'"
+                            icon="fa-pencil-square-o" name="action_view_crm_invoices"
+                            groups="custom_landoc.group_landoc_manager,custom_landoc.group_landoc_accounting_user,custom_landoc.group_landoc_accounting_team_lead_user,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user">
+                        <div class="o_form_field o_stat_info">
+                            <span class="o_stat_value">
+                                <field name="currency_id" invisible="1"/>
+                                <field name="total_invoiced" widget="monetary"
+                                       options="{'currency_field': 'currency_id'}"/>
+                            </span>
+                            <span class="o_stat_text">Invoiced</span>
+                        </div>
+                    </button>
+
+                    <button type="object" class="oe_stat_button" invisible="type != 'opportunity'"
+                            icon="fa-pencil-square-o" name="action_view_crm_expenses">
+                        <field name="currency_id" invisible="1"/>
+                        <field name="total_expenses" widget="statinfo" string="Expenses"/>
+                    </button>
+
+                    <button type="object" class="oe_stat_button" invisible="type != 'opportunity'"
+                            groups="custom_landoc.group_landoc_manager,custom_landoc.group_landoc_internal_user,custom_landoc.group_landoc_internal_team_lead_user,custom_landoc.group_landoc_accounting_user,custom_landoc.group_landoc_accounting_team_lead_user,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user"
+                            icon="fa-pencil-square-o" name="action_view_crm_vendor_bills">
+                        <field name="currency_id" invisible="1"/>
+                        <field name="total_vendor_bills" widget="statinfo" string="Vendor Bills"/>
+                    </button>
+                </xpath>
+                <xpath expr="//button[@name='action_show_potential_duplicates']" position="attributes">
+                    <!-- Warning: Shouldn't  make space between groups or end of the groups. It may cause visibility issue. -->
+                    <attribute name="groups">custom_landoc.group_landoc_manager</attribute>
+                </xpath>
+                <xpath expr="//sheet/div/h1" position="replace">
+                </xpath>
+                <xpath expr="//sheet/div[2]" position="before">
+                    <h1>
+                        <field class="text-break" options="{'line_breaks': False}" readonly="1" widget="text"
+                               name="name" placeholder="Ticket Number" string="Ticket Number"/>
+                        <!-- ___ Service Flags _____ -->
+                        <field name="is_cc" readonly="type == 'opportunity'" invisible="1"/>
+                        <field name="is_document_consulting" invisible="1"/>
+                        <field name="is_document_registation" readonly="type == 'opportunity'" invisible="1"/>
+                        <field name="is_ec" readonly="type == 'opportunity'" invisible="1"/>
+                        <field name="is_legal_opinion" readonly="type == 'opportunity'" invisible="1"/>
+                        <field name="is_land_surveying" readonly="type == 'opportunity'" invisible="1"/>
+                        <field name="is_marriage_registation" readonly="type == 'opportunity'" invisible="1"/>
+                        <field name="is_revenue_and_local_body" readonly="type == 'opportunity'" invisible="1"/>
+                        <field name="is_stamp" readonly="type == 'opportunity'" invisible="1"/>
+                        <field name="is_unregistered_agreement" readonly="type == 'opportunity'" invisible="1"/>
+                        <field name="is_unregistered_agreement_others" readonly="type == 'opportunity'" invisible="1"/>
+
+                    </h1>
+                    <h3>
+                        <field name="checklist_dept_status" widget="badge" readonly="1"
+                               invisible="type != 'opportunity'"
+                               decoration-danger="checklist_dept_status == 'un_assigned'"
+                               decoration-info="checklist_dept_status == 'to_do'"
+                               decoration-warning="checklist_dept_status == 'in_progress'"
+                               decoration-success="checklist_dept_status == 'done'"
+                        />
+                        <field name="amount_due_warning" widget="badge" readonly="1"
+                               invisible="type != 'opportunity' or not invoice_ids or not amount_due_warning"
+                               decoration-danger="1"/>
+                    </h3>
+                    <group string="Requested Service">
+                        <group>
+                            <field name="service_category_id" context="{'calling_model': 'crm.lead'}" required="1"
+                                   readonly="type == 'opportunity'"
+                                   options="{'no_create': True}"/>
+                            <field name="is_propertychecklist_needed" invisible="1"/>
+                            <field name="property_type_id" invisible="not is_propertychecklist_needed"
+                                   required="is_propertychecklist_needed" readonly="type == 'opportunity'"
+                                   options="{'no_create': True}"/>
+                            <field name="checklist_input_ids" invisible="1" options="{'no_create': True}"
+                                   widget="many2many_tags" readonly="1"/>
+
+
+                            <!-- ___ Workflow Label Automation Multi-service ___ -->
+                            <field name="workflow_count" invisible="1"/>
+                            <!--   <label for="workflow_master_id" string="Stamp Paper Type" invisible="not is_stamp"/>-->
+                            <field name="workflow_master_id" readonly="type == 'opportunity'" required="1"
+                                   force_save="1" nolabel="0"
+                                   options="{'no_create': True}"
+                                   invisible="service_count == 1 or workflow_count == 1 or not service_category_id"/>
+
+                            <!-- Marriage service -->
+<!--                            <field name="marriage_registration_place_option" invisible="not is_marriage_category" readonly="type == 'opportunity'"/>-->
+
+
+
+
+                        </group>
+                        <group>
+                            <!--  ____ Workflow Label Automation for Single Service ____ -->
+                            <!--  <label for="workflow_master_id" string="Book No" invisible="not is_cc"/>-->
+                            <field name="workflow_master_id" readonly="type == 'opportunity'" required="1"
+                                   force_save="1" nolabel="0"
+                                   options="{'no_create': True}"
+                                   invisible="service_count != 1 or workflow_count == 1 or is_ec"/>
+                            <field name="service_count" invisible="1"/>
+                            <field name="service_id" options="{'no_create': True}" required="1" force_save="1"
+                                   readonly="type == 'opportunity' or service_count == 1"
+                                   invisible="service_count == 1 or not service_category_id or is_marriage_category"/>
+
+                            <!--  ____ Marriage fields ____ -->
+                            <field name="date_of_marriage" required="is_marriage_category"
+                                   invisible="not is_marriage_category" readonly="type == 'opportunity'"/>
+                            <field name="date_delay_waring" string=" " class="text-danger"
+                                   invisible="not is_marriage_category or not date_delay_waring or type == 'opportunity'" readonly="1"/>
+
+
+                            <div class="o_row"
+                                 groups="custom_landoc.group_landoc_manager,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user"
+                                 invisible="not is_propertychecklist_needed or type != 'opportunity' or not order_ids">
+                                <group col="2" class="w-100">
+
+                                    <!-- BUYER COLUMN -->
+                                    <group>
+                                        <field name="buyer_party_type" readonly="checklist_counts != 0"/>
+                                        <field name="no_of_buyer" invisible="buyer_party_type != 'individual'"
+                                               readonly="checklist_counts != 0"/>
+                                        <field name="is_buyer_minor" invisible="buyer_party_type != 'individual'"
+                                               readonly="checklist_counts != 0"/>
+                                        <field name="buyer_name"
+                                               invisible="not buyer_party_type or buyer_party_type == 'individual'"
+                                               readonly="checklist_counts != 0"/>
+                                        <field name="buyer_company_tan_no"
+                                               invisible="buyer_party_type != 'company_firm_trust'"
+                                               readonly="checklist_counts != 0"/>
+                                        <field name="is_buyer_representative" readonly="checklist_counts != 0"/>
+                                    </group>
+
+                                    <!-- SELLER COLUMN -->
+                                    <group>
+                                        <field name="seller_party_type" readonly="checklist_counts != 0"/>
+                                        <field name="no_of_seller" invisible="seller_party_type != 'individual'"
+                                               readonly="checklist_counts != 0"/>
+                                        <field name="is_seller_minor" invisible="seller_party_type != 'individual'"
+                                               readonly="checklist_counts != 0"/>
+                                        <field name="seller_name"
+                                               invisible="not seller_party_type or seller_party_type == 'individual'"
+                                               readonly="checklist_counts != 0"/>
+                                        <field name="seller_company_tan_no"
+                                               invisible="seller_party_type != 'company_firm_trust'"
+                                               readonly="checklist_counts != 0"/>
+                                        <field name="is_seller_representative" readonly="checklist_counts != 0"/>
+                                    </group>
+                                </group>
+                            </div>
+                        </group>
+
+                    </group>
+
+                    <group invisible="not is_marriage_category">
+                        <group string="Bride">
+                            <field name="bride_religion_id" readonly="type == 'opportunity'" invisible="not is_marriage_category" string="Bride Religion" placeholder="Select Religion"/>
+                            <field name="bride_is_nri" invisible="not is_marriage_category" readonly="type == 'opportunity'"/>
+
+                        </group>
+
+                        <group string="Groom">
+                            <field name="groom_religion_id" readonly="type == 'opportunity'" invisible="not is_marriage_category" string="Groom Religion" placeholder="Select Religion"/>
+                            <field name="groom_is_nri" invisible="not is_marriage_category" readonly="type == 'opportunity'"/>
+
+                        </group>
+                    </group>
+
+                    <group string="Registration Information" invisible="not is_marriage_category">
+                        <group>
+                            <field name="visible_marriage_options" invisible="1"/>
+                            <field name="marriage_registration_place_option" invisible="not is_marriage_category or not visible_marriage_options" readonly="type == 'opportunity'"/>
+                            <field name="marriage_place_option" invisible="not is_marriage_category or visible_marriage_options" readonly="type == 'opportunity'"/>
+                        </group>
+                        <group>
+                            <field name="service_id" options="{'no_create': True}" required="1" force_save="1"
+                                   readonly="type == 'opportunity' or service_count == 1" domain="[('id', 'in', marriage_service_ids)]"
+                                   invisible="service_count == 1 or not service_category_id"/>
+                        </group>
+                    </group>
+
+                    <!-- EC, CC -->
+                    <group string="Certified Copy" invisible="not is_cc">
+                        <group>
+                            <field name="document_no" required="is_cc" invisible="not is_cc"
+                                   readonly="type == 'opportunity'"/>
+                            <!--  <field name="book_no" required="is_cc" invisible="not is_cc" readonly="type == 'opportunity'"/>-->
+                        </group>
+                        <group>
+                            <field name="document_year" required="is_cc" invisible="not is_cc"
+                                   readonly="type == 'opportunity'"/>
+                            <field name="whos_name_applied" required="is_cc" invisible="not is_cc"
+                                   readonly="type == 'opportunity'"/>
+                            <field name="cc_book_03_or_04" invisible="1" readonly="type == 'opportunity'"/>
+                        </group>
+                    </group>
+                    <group string="Encumbrance Certificate" name="ec_group" invisible="not is_ec">
+                        <group>
+                            <field name="ec_start_date" required="is_ec" invisible="not is_ec"
+                                   readonly="type == 'opportunity'"/>
+                            <field name="ec_related_documents_filename" invisible="1"/>
+                            <field name="ec_related_documents" widget="binary" filename="ec_related_documents_filename"
+                                   invisible="not is_ec" readonly="type == 'opportunity'"/>
+                        </group>
+                        <group>
+                            <field name="ec_end_date" required="is_ec" invisible="not is_ec"
+                                   readonly="type == 'opportunity'"/>
+                            <field name="ec_end_date_warning" string=" " class="text-danger"
+                                   invisible="not is_ec or not ec_end_date_warning" readonly="1"/>
+                            <field name="ec_no_of_survey" required="is_ec" groups="!custom_landoc.group_landoc_legal_team_lead_user,!custom_landoc.group_landoc_legal_user" force_save="1" readonly="1" invisible="not is_ec"/>
+                            <field name="ec_no_of_survey" required="is_ec" groups="custom_landoc.group_landoc_legal_team_lead_user,custom_landoc.group_landoc_legal_user" force_save="1" invisible="not is_ec"/>
+<!--                            <field name="old_ec_survey_no" invisible="1"/>-->
+                            <field name="ec_additional_year_count" invisible="1"/>
+                            <field name="ec_additional_year_amount" invisible="1"/>
+                        </group>
+                    </group>
+                </xpath>
+
+                <!-- Contact Information -->
+                <xpath expr="//group[@name='lead_partner']" position="replace">
+                    <group invisible="type == 'opportunity'">
+                        <field name="new_or_existing_customer" invisible="type == 'opportunity'" string="Choose"
+                               widget="radio"
+                               options="{'horizontal': true}"/>
+                        <label for="contact_name" invisible="new_or_existing_customer == 'existing_customer'"/>
+                        <div class="o_row" invisible="new_or_existing_customer == 'existing_customer'">
+                            <field name="contact_name" required="new_or_existing_customer == 'new_customer'"
+                                   invisible="type != 'lead'"/>
+                            <field name="title" placeholder="Title" invisible="type != 'lead'" domain="[]"
+                                   options="{&quot;no_open&quot;: True}"/>
+                        </div>
+                        <field name="partner_id" options="{'no_create': True}"
+                               required="new_or_existing_customer == 'existing_customer'"
+                               invisible="new_or_existing_customer != 'existing_customer'"
+                               domain="[('is_company', '=', False)]"
+                               context="{'default_name': contact_name,'default_title': title,'default_street': street, 'default_street2': street2,'default_city': city, 'default_state_id': state_id,'default_zip': zip,'default_country_id': country_id,'default_function': function,'default_phone': phone,'default_mobile': mobile, 'default_email': email_from, 'default_user_id': user_id,'default_team_id': team_id,'default_website': website,'default_lang': lang_code,'show_vat': True }"/>
+
+                        <field name="show_address" string="Show Address" widget="boolean_toggle"
+                               invisible="type == 'opportunity'"/>
+                        <label for="street" string="Address" invisible="not show_address"/>
+                        <div class="o_address_format" invisible="not show_address">
+                            <field name="street" placeholder="Street..." class="o_address_street"/>
+                            <field name="street2" placeholder="Street 2..." class="o_address_street"/>
+                            <field name="city_id" placeholder="City" class="o_address_city"
+                                   options="{'no_open': False, 'no_create_edit': False}"/>
+                            <field name="state_id" class="o_address_state" placeholder="State"
+                                   options="{&quot;no_open&quot;: True}"/>
+                            <field name="zip" placeholder="ZIP" class="o_address_zip"/>
+                            <field name="country_id" placeholder="Country" class="o_address_country"
+                                   options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+                        </div>
+                    </group>
+                    <group invisible="type == 'lead'">
+                        <field name="partner_id" readonly="1" widget="res_partner_many2one"/>
+                        <field name="show_address" widget="boolean_toggle" string="Show Address"/>
+                        <label for="street" string="Address" readonly="1" invisible="not show_address"/>
+                        <div class="o_address_format" invisible="not show_address">
+                            <field name="street" readonly="1" placeholder="Street..." class="o_address_street"/>
+                            <field name="street2" readonly="1" placeholder="Street 2..." class="o_address_street"/>
+                            <field name="city_id" placeholder="City" readonly="1" class="o_address_city"
+                                   options="{'no_open': False, 'no_create_edit': False}"/>
+                            <field name="state_id" readonly="1" class="o_address_state" placeholder="State"
+                                   options="{&quot;no_open&quot;: True}"/>
+                            <field name="zip" readonly="1" placeholder="ZIP" class="o_address_zip"/>
+                            <field name="country_id" readonly="1" placeholder="Country" class="o_address_country"
+                                   options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+                        </div>
+                    </group>
+                </xpath>
+
+                <!-- Lead Info -->
+                <xpath expr="//group[@name='lead_info']" position="after">
+                    <group>
+                        <field name="priority" widget="priority" readonly="type == 'opportunity'"/>
+                        <field name="mobile" string="Whatsapp No" placeholder="+91 9876543210" required="1"
+                               readonly="type == 'opportunity'"/>
+                        <label for="action_mob_same_as_phone" class="fw-bold" string="Same As Whatsapp No"
+                               invisible="mobile == phone or phone or new_or_existing_customer != 'new_customer' or partner_id or type == 'opportunity'"/>
+                        <button name="action_mob_same_as_phone" type="object" icon="fa-arrow-down"
+                                invisible="mobile == phone or phone or new_or_existing_customer != 'new_customer' or partner_id or type == 'opportunity'"/>
+                        <field name="phone" string="Mobile" readonly="type == 'opportunity'"/>
+<!--                        <field name="religion_id" readonly="type == 'opportunity'" placeholder="Select Religion"-->
+<!--                               invisible="type != 'lead'"/>-->
+                        <field name="invoice_ids" invisible="1"/>
+                        <field name="analytic_account_id" invisible="1"/>
+                    </group>
+
+                </xpath>
+
+                <!-- Official Use -->
+                <xpath expr="//notebook" position="before">
+                    <group string="Official Use">
+                        <group>
+                            <field name="source_id" placeholder="Select Source" readonly="type == 'opportunity'"/>
+                            <field name="user_id" context="{'default_sales_team_id': team_id}"
+                                   readonly="1"
+                                   widget="many2one_avatar_user"/>
+                            <field name="assigned_to_id" force_save="1"
+                                   readonly="1"
+                                   widget="many2one_avatar_user"/>
+                        </group>
+                        <group>
+                            <field name="company_id" string="Branch" readonly="1"/>
+                            <field name="landoc_stage" readonly="1" force_save="1" invisible="1"/>
+                            <field name="referred" placeholder="Referred Person Name" readonly="type == 'opportunity'"/>
+                            <field name="team_id" options="{'no_open': True, 'no_create': True}" required="1" force_save="1"
+                                   readonly="1"
+                                   context="{'kanban_view_ref': 'sales_team.crm_team_view_kanban'}"/>
+
+                        </group>
+
+                    </group>
+
+                    <!-- Registrar Info -->
+                    <group string="Registrar Information" col="4">
+                        <group>
+                            <!-- Commented this feature temporarily  -->
+                            <!-- <field name="sro_zone_ids" invisible="1"/>-->
+                            <!-- <field name="sro_district_ids" invisible="1"/>-->
+                            <!-- <field name="sro_ids" invisible="1"/>-->
+
+                            <!--  domain="[('id', 'in', sro_zone_ids)]"-->
+                            <field name="zone_id" placeholder="Select Zone" readonly=""
+                                    required="type == 'opportunity'"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <!--  domain="[('id', 'in', sro_district_ids),]"-->
+                            <field name="district_id" placeholder="Select DRO" readonly=""
+                                   required="type == 'opportunity'" domain="[('zone_id', '=', zone_id)]"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <!--  domain="[('id', 'in', sro_ids),]"-->
+                            <field name="sro_id" placeholder="Select SRO" readonly="" required="type == 'opportunity'"
+                                   domain="[('district_id', '=', district_id)]"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="village_id" placeholder="Select Village" readonly=""
+                                   required="type == 'opportunity'"
+                                   options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                </xpath>
+
+                <!-- Form: O2many -->
+                <xpath expr="//notebook/page[@name='lead']" position="after">
+                    <page name="checklist_tracking"
+                          groups="custom_landoc.group_landoc_manager,custom_landoc.group_landoc_marketing_user,custom_landoc.group_landoc_marketing_team_lead_user,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user,custom_landoc.group_landoc_internal_user,custom_landoc.group_landoc_internal_team_lead_user,custom_landoc.group_landoc_accounting_user,custom_landoc.group_landoc_accounting_team_lead_user,custom_landoc.group_landoc_external_user,custom_landoc.group_landoc_external_team_lead_user,custom_landoc.group_landoc_legal_user,custom_landoc.group_landoc_legal_team_lead_user"
+                          string="Checklist Tracking" invisible="type != 'opportunity'">
+                        <field name="checklist_tracking_line" nolabel="1">
+                            <list editable="bottom" create="0" delete="0" decoration-info="department_status == 'to_do'"
+                                   decoration-warning="active_step"
+                                   decoration-success="department_status == 'done'">
+                                <field name="sequence" width="50" widget="handle" column_invisible="1" readonly="1"/>
+                                <field name="sequence" width="50" readonly="1"/>
+                                <field name="department_id" options="{'no_create': True}"/>
+                                <field name="dept_members_ids" column_invisible="1"/>
+                                <field name="assigned_to_id" readonly="not active_step" domain="[('id', 'in', dept_members_ids)]" options="{'no_create': True}"/>
+                                <field name="landoc_stage"/>
+                                <button class="btn-primary o_fsm_stop" name="action_set_status_done" type="object"
+                                        string="Done" title="Done" invisible="department_status == 'done'"
+                                        icon="fa-check-circle"/>
+                                <field name="department_status" column_invisible="1" readonly="not active_step"/>
+                                <field name="stage_id" optional="hide" options="{'no_create': True}"/>
+                                <field name="comments" optional="hide" readonly="not active_step"/>
+
+                                <!--              ***** Timmer starts *****              -->
+                                <!--    <field name="timer_start" column_invisible="1" nolabel="1"/>-->
+                                <!--     <field name="timer_pause" column_invisible="1"/>-->
+                                <!--     <field name="display_timer_start_primary" column_invisible="1"/>-->
+                                <!--     <field name="display_timer_stop" column_invisible="1"/>-->
+                                <!--      <field name="display_timer_pause" column_invisible="1"/>-->
+                                <!--       <field name="display_timer_resume" column_invisible="1"/>-->
+                                <!--       <field name="difference_status" readonly="1" column_invisible="1"/>-->
+
+                                <!--     <field name="remaining_hours" string="Actual Time" readonly="1" widget="float_time"-->
+                                <!--                                       column_invisible="1"-->
+                                <!--   decoration-danger="difference_status == 'overdue'"-->
+                                <!--   decoration-warning="difference_status == 'beforehand'"-->
+                                <!--   decoration-success="difference_status == 'normal'"-->
+                                <!--   class="text-primary me-auto h3 ms-2 ms-sm-0 fw-bold"/>-->
+                                <!--   <field name="estimated_time" readonly="1" widget="float_time" column_invisible="1"-->
+                                <!--      decoration-danger="difference_status == 'overdue'"-->
+                                <!--      decoration-warning="difference_status == 'beforehand'"-->
+                                <!--      decoration-success="difference_status == 'normal'"-->
+                                <!--      class="text-primary me-auto h3 ms-2 ms-sm-0 fw-bold"/>-->
+                                <!--   <field name="time_difference" readonly="1" widget="float_time" column_invisible="1"-->
+                                <!--      decoration-danger="difference_status == 'overdue'"-->
+                                <!--      decoration-warning="difference_status == 'beforehand'"-->
+                                <!--      decoration-success="difference_status == 'normal'"-->
+                                <!--      class="text-primary me-auto h3 ms-2 ms-sm-0 fw-bold"/>-->
+
+                                <!--   <button class="btn-primary" name="action_timer_start" type="object"-->
+                                <!--    groups="custom_landoc.group_landoc_manager"-->
+                                <!--    string="Start" title="Start timer"-->
+                                <!--    column_invisible="1"-->
+                                <!--    invisible="not display_timer_start_primary"-->
+                                <!--    icon="fa-clock-o"/>-->
+                                <!--    <button class="btn-primary o_fsm_stop" name="action_timer_stop" type="object"-->
+                                <!--     groups="custom_landoc.group_landoc_manager"-->
+                                <!--     invisible="not display_timer_stop"-->
+                                <!--     column_invisible="1"-->
+                                <!--      string="Stop" title="Stop timer"-->
+                                <!--      icon="fa-clock-o"/>-->
+                                <!--     <button class="btn-secondary" name="action_timer_pause" type="object"-->
+                                <!--     groups="custom_landoc.group_landoc_manager"-->
+                                <!--     invisible="not display_timer_pause" column_invisible="1"-->
+                                <!--     string="Pause" title="Pause timer"/>-->
+                                <!--     <button class="btn-secondary" name="action_timer_resume" type="object"-->
+                                <!--     groups="custom_landoc.group_landoc_manager"-->
+                                <!--     invisible="not display_timer_resume" column_invisible="1"-->
+                                <!--     string="Resume" title="Resume timer"/>-->
+                                <!--              ***** Timmer ends *****                 -->
+                                <field name="file_name" column_invisible="1"/>
+                                <field name="workflow_line_id" column_invisible="1"/>
+                                <field name="attachment_ids" widget="many2many_binary" width="200" column_invisible="1"
+                                       readonly="not active_step"
+                                       options="{'no_create': True}"/>
+                                <field name="active_step" readonly="0" column_invisible="1" widget="boolean_toggle"/>
+                            </list>
+                        </field>
+                    </page>
+                    <page string="Stamp Papers Used"
+                          groups="custom_landoc.group_landoc_manager,custom_landoc.group_landoc_accounting_user,custom_landoc.group_landoc_accounting_team_lead_user"
+                          invisible="type != 'opportunity' or is_ec">
+                        <field name="lot_ids">
+                            <list>
+                                <field name="product_id"/>
+                                <field name="name"/>
+                            </list>
+                        </field>
+                    </page>
+                </xpath>
+
+
+                <!-- Set Invisible -->
+                <xpath expr="//group[@name='lead_info']/field[@name='email_cc']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//group[@name='lead_info']/field[@name='function']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//notebook/page[@name='extra']/group/group[1]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//notebook/page[@name='extra']/group/group[3]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//sheet/div[2]/h2/div[1]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//sheet/div[2]/h2/div[2]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//group[@name='lead_priority']" position="replace">
+                </xpath>
+                <xpath expr="//group[@name='lead_info']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//group[@name='opportunity_partner']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//group[field[@name='user_id'] and field[@name='tag_ids']]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//group[field[@name='user_id'] and field[@name='team_id']]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <xpath expr="//form/sheet/notebook/page[@name='extra']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//form/sheet/notebook/page[3]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
+
+
+        <!-- List: Crm Lead -->
+        <record id="crm_lead_list_lead_view_inherit" model="ir.ui.view">
+            <field name="name">custom.landoc.crm.lead.list.lead</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="crm.crm_case_tree_view_leads"/>
+            <field name="arch" type="xml">
+                <xpath expr="//list/field[@name='probability']" position="attributes">
+                    <attribute name="column_invisible">1</attribute>
+                </xpath>
+                <xpath expr="//list/field[@name='user_id']" position="before">
+                    <field name="service_category_id" context="{'calling_model': 'crm.lead'}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Kanban: Crm Lead -->
+        <record id="crm_lead_kanban_view_inherit" model="ir.ui.view">
+            <field name="name">custom.landoc.crm.lead.kanban</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="crm.crm_case_kanban_view_leads"/>
+            <field name="arch" type="xml">
+                <xpath expr="//kanban" position="attributes">
+                    <attribute name="default_group_by">team_id</attribute>
+                    <attribute name="quick_create_view"></attribute>
+                    <attribute name="on_create"></attribute>
+                    <attribute name="create">0</attribute>
+                </xpath>
+                <xpath expr="//t" position="replace"/>
+                <xpath expr="//field[@name='user_id']" position="replace"/>
+                <xpath expr="//progressbar" position="replace">
+                    <progressbar field="checklist_dept_status"
+                                 colors="{&quot;un_assigned&quot;: &quot;danger&quot;, &quot;to_do&quot;: &quot;info&quot;, &quot;in_progress&quot;: &quot;warning&quot;, &quot;done&quot;: &quot;success&quot;}"
+                                 help="This bar allows to filter the opportunities based on scheduled activities."/>
+                    <field name="compute_next_step" invisible="1"/>
+                </xpath>
+                <xpath expr="//widget" position="after">
+                    <field name="is_stage_won" invisible="1"/>
+                    <widget name="web_ribbon" title="WON" bg_color="text-bg-success" invisible="not is_stage_won or not active"/>
+                </xpath>
+                <xpath expr="//field[@name='lead_properties']" position="after">
+                    <field name="checklist_dept_status" widget="badge" readonly="1"
+                           decoration-danger="checklist_dept_status == 'un_assigned'"
+                           decoration-info="checklist_dept_status == 'to_do'"
+                           decoration-warning="checklist_dept_status == 'in_progress'"
+                           decoration-success="checklist_dept_status == 'done'"
+                    />
+                </xpath>
+                <xpath expr="//kanban//field[@name='partner_id']" position="after">
+                    <field name="service_category_id" class="text-truncate" context="{'calling_model': 'crm.lead'}"/>
+                    <field name="amount_due_warning" widget="badge" readonly="1" invisible="type != 'opportunity' or not invoice_ids or not amount_due_warning" decoration-danger="1"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- List: Crm Checklist Tracking -->
+        <record id="crm_checklist_tracking_tree_view" model="ir.ui.view">
+            <field name="name">crm.checklist.tracking.tree.view</field>
+            <field name="model">crm.checklist.tracking</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="sequence"/>
+                    <field name="department_id"/>
+                    <field name="landoc_stage"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- List: Crm Iap Mine Lead -->
+        <record id="crm_iap_mine_tree_lead_view_inherit" model="ir.ui.view">
+            <field name="name">crm.iap.mine.tree.lead.view.inherit</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="crm_iap_mine.crm_lead_view_tree_lead"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_generate_leads']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Kanban: Crm Iap Mine Lead -->
+        <record id="crm_iap_mine_kanban_lead_view_inherit" model="ir.ui.view">
+            <field name="name">crm.iap.mine.kanban.lead.view.inherit</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="crm_iap_mine.view_crm_lead_kanban"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header/button" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- List: Crm Opportunity -->
+        <record id="crm_lead_list_oppor_view_inherit" model="ir.ui.view">
+            <field name="name">custom.landoc.crm.lead.list.oppor</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="crm.crm_case_tree_view_oppor"/>
+            <field name="arch" type="xml">
+                <xpath expr="//list/field[@name='probability']" position="attributes">
+                    <attribute name="column_invisible">1</attribute>
+                </xpath>
+                <xpath expr="//list" position="attributes">
+                    <attribute name="create">0</attribute>
+                    <attribute name="decoration-danger">color == 1</attribute>
+                </xpath>
+                <xpath expr="//list/field[@name='email_from']" position="replace">
+                    <field name="service_category_id" context="{'calling_model': 'crm.lead'}"/>
+                </xpath>
+                <xpath expr="//field[@name='stage_id']" position="replace">
+                    <field name="team_id"/>
+                    <field name="checklist_dept_status" widget="badge" readonly="1"
+                           decoration-danger="checklist_dept_status == 'un_assigned'"
+                           decoration-info="checklist_dept_status == 'to_do'"
+                           decoration-warning="checklist_dept_status == 'in_progress'"
+                           decoration-success="checklist_dept_status == 'done'"/>
+                    <field name="amount_due_warning" widget="badge" readonly="1" invisible="type != 'opportunity' or not invoice_ids or not amount_due_warning" decoration-danger="1"/>
+
+                </xpath>
+            </field>
+        </record>
+
+        <!-- List: Crm Iap Mine Opportunity -->
+        <record id="crm_iap_mine_list_oppor_view_inherit" model="ir.ui.view">
+            <field name="name">crm.iap.mine.list.oppor.view.inherit</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="crm_iap_mine.crm_lead_view_tree_opportunity"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='action_generate_leads']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Kanban: Crm Iap Mine Opportunity -->
+        <record id="crm_iap_mine_kanban_view_inherit" model="ir.ui.view">
+            <field name="name">crm.iap.mine.kanban.view.inherit</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="crm_iap_mine.crm_case_kanban_view_leads"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header/button" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Search: CRM Kanban -->
+        <record id="view_crm_case_opportunities_filter_inherit" model="ir.ui.view">
+            <field name="name">view.crm.case.opportunities.filter.inherit</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="crm.view_crm_case_opportunities_filter"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='assigned_to_me']" position="replace">
+                    <filter string="Leads" name="assigned_to_me" domain="[('is_stage_won', '=', False)]" help="Opportunities that are assigned to me"/>
+                </xpath>
+                <xpath expr="//filter[@name='source']" position="after">
+                    <filter string="Service" name="service" domain="[]" context="{'group_by':'service_id'}"/>
+                </xpath>
+
+                <xpath expr="//filter[@name='saleschannel']" position="replace">
+                    <filter string="Department" name="saleschannel" context="{'group_by':'team_id'}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Search: CRM List -->
+        <record id="custom_crm_case_leads_filter_inherit" model="ir.ui.view">
+            <field name="name">custom.crm.case.leads.filter.inherit</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="crm.view_crm_case_leads_filter"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//search//group/filter[@name='saleschannel']" position="attributes">
+                    <attribute name="string">Department</attribute>
+                </xpath>
+
+                <xpath expr="//search//group/filter[@name='saleschannel']" position="after">
+                    <filter name="company_id" string="Branch" context="{'group_by': 'company_id'}"/>
+                    <filter name="service_category_id" string="Category of Service"
+                            context="{'group_by': 'service_category_id'}"/>
+                    <filter name="service_id" string="Service" context="{'group_by': 'service_id'}"/>
+
+                    <filter name="zone_id" string="Zone" context="{'group_by': 'zone_id'}"/>
+                    <filter name="district_id" string="DRO" context="{'group_by': 'district_id'}"/>
+                    <filter name="sro_id" string="SRO" context="{'group_by': 'sro_id'}"/>
+                    <filter name="village_id" string="Village" context="{'group_by': 'village_id'}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Action: CRM -->
+        <record model="ir.actions.act_window" id="crm.crm_lead_action_pipeline">
+            <field name="name">Pipeline</field>
+            <field name="res_model">crm.lead</field>
+            <field name="view_mode">kanban,list,graph,pivot,form,calendar,activity</field>
+            <field name="domain">[('type','=','opportunity')]</field>
+            <field name="context">{
+                    'default_type': 'opportunity',
+                    'search_default_assigned_to_me': 1,
+                    'search_default_saleschannel': 1
+            }</field>
+            <field name="search_view_id" ref="crm.view_crm_case_opportunities_filter"/>
+        </record>
+
+        <!-- Inherited for updating sequence.  -->
+        <record id="crm.crm_lead_action_pipeline_view_kanban" model="ir.actions.act_window.view">
+           <field name="sequence" eval="2"/>
+           <field name="view_mode">kanban</field>
+           <field name="view_id" ref="crm.crm_case_kanban_view_leads"/>
+           <field name="act_window_id" ref="crm.crm_lead_action_pipeline"/>
+        </record>
+
+        <!-- Form: sale_crm -->
+        <record id="crm_lead_sale_crm_view_inherit" model="ir.ui.view">
+            <field name="name">sale.crm.crm.lead.form.lead</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="sale_crm.crm_case_form_view_oppor"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//button[@name='action_sale_quotations_new']" position="attributes">
+                    <!-- Warning: Shouldn't  make space between groups or end of the groups. It may cause visibility issue. -->
+                    <attribute name="groups">custom_landoc.group_landoc_manager,custom_landoc.group_landoc_marketing_user,custom_landoc.group_landoc_marketing_team_lead_user,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user</attribute>
+                    <attribute name="invisible">type == 'lead' or not active or order_ids</attribute>
+                </xpath>
+
+                <!--  <xpath expr="//button[@name='action_schedule_meeting']" position="attributes">-->
+                <!--    &lt;!&ndash; Warning: Shouldn't  make space between groups or end of the groups. It may cause visibility issue. &ndash;&gt;-->
+                <!--    <attribute name="groups">custom_landoc.group_landoc_manager,custom_landoc.group_landoc_marketing_user,custom_landoc.group_landoc_marketing_team_lead_user,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user,custom_landoc.group_landoc_external_user,custom_landoc.group_landoc_external_team_lead_user</attribute>-->
+                <!--  </xpath>-->
+
+                <xpath expr="//button[@name='action_view_sale_quotation']" position="attributes">
+                    <!-- Warning: Shouldn't  make space between groups or end of the groups. It may cause visibility issue. -->
+                    <attribute name="groups">custom_landoc.group_landoc_manager,custom_landoc.group_landoc_marketing_user,custom_landoc.group_landoc_marketing_team_lead_user,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_view_sale_order']" position="attributes">
+                    <!-- Warning: Shouldn't  make space between groups or end of the groups. It may cause visibility issue. -->
+                    <attribute name="groups">custom_landoc.group_landoc_manager,custom_landoc.group_landoc_marketing_user,custom_landoc.group_landoc_marketing_team_lead_user,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user</attribute>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- CRM: Menu inherited for to change action -->
+        <record id="crm.crm_menu_root" model="ir.ui.menu">
+            <field name="name">CRM</field>
+            <field name="action" ref="crm.crm_lead_all_leads"/>
+        </record>
+
+        <record id="crm.crm_menu_sales" model="ir.ui.menu">
+            <field name="name">Sales</field>
+            <field name="sequence">5</field>
+        </record>
+
+        <record id="crm.menu_crm_opportunities" model="ir.ui.menu">
+            <field name="name">My Tickets</field>
+        </record>
+
+        <record id="crm.crm_menu_leads" model="ir.ui.menu">
+            <field name="name">Leads</field>
+            <field name="sequence">2</field>
+        </record>
+
+    </data>
+</odoo>

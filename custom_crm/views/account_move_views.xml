@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="custom_crm_view_move_form_inherit" model="ir.ui.view">
+            <field name="name">custom.crm.view.move.form.inherit</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <!--    To avoid creating duplicate invoices  -->
+                <xpath expr="//form" position="attributes">
+                    <attribute name="create">0</attribute>
+                </xpath>
+                <xpath expr="//field[@name='partner_shipping_id']" position="after">
+                    <field name="lead_id" invisible="1"/>
+                </xpath>
+
+                <xpath expr="//list/field[@name='analytic_distribution']" position="after">
+                    <field name="lead_id" invisible="1"/>
+                </xpath>
+
+                <!-- Vendor Bills fields-->
+                <xpath expr="//field[@name='ref']" position="after">
+                    <field name="transaction_no" invisible="move_type not in ('in_invoice', 'in_refund', 'in_receipt')" readonly="state != 'draft'"/>
+                    <field name="application_no" invisible="move_type not in ('in_invoice', 'in_refund', 'in_receipt')" readonly="state != 'draft'"/>
+                    <field name="reference_no" invisible="move_type not in ('in_invoice', 'in_refund', 'in_receipt')" readonly="state != 'draft'"/>
+                </xpath>
+
+            </field>
+        </record>
+
+        <record id="view_landoc_out_invoice_tree" model="ir.ui.view">
+            <field name="name">landoc.out.invoice.list</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_invoice_tree"/>
+            <field name="mode">primary</field>
+            <field name="arch" type="xml">
+                <!--    To avoid creating duplicate invoices  -->
+                <xpath expr="//list" position="attributes">
+                    <attribute name="create">0</attribute>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

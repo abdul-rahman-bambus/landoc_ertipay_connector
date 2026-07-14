@@ -1,0 +1,96 @@
+<odoo>
+    <record id="view_checklist_tracking_wizard_wizard" model="ir.ui.view">
+        <field name="name">checklist.tracking.form.wizard</field>
+        <field name="model">checklist.tracking.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Checklist Tracking">
+                <group>
+                    <group>
+                        <field name="choose_step" widget="radio" options="{'horizontal': false}"/>
+                    </group>
+                    <group>
+                        <field name="is_next_workflow" invisible="1"/>
+                        <h3 class="text-primary" invisible="not is_next_workflow or choose_step != 'next_worklow_step'">We've completed all the steps in the workflow.</h3>
+                    </group>
+                    <group>
+                        <field name="department_id" force_save="1" invisible="choose_step != 'next_worklow_step'"
+                               options="{'no_create': True}"/>
+                        <field name="dept_members_ids" invisible="1"/>
+                        <field name="assigned_to_id" force_save="1" invisible="choose_step != 'next_worklow_step'" domain="[('id', 'in', dept_members_ids)]" required="choose_step == 'next_worklow_step'"
+                               options="{'no_create': True}"/>
+                        <field name="lead_id" readonly="1" invisible="1" options="{'no_create': True}"/>
+                        <field name="workflow_master_id" readonly="1" invisible="1" options="{'no_create': True}"/>
+                        <field name="landoc_stage" force_save="1" invisible="choose_step != 'next_worklow_step'"/>
+                        <field name="workflow_line_id" force_save="1" invisible="1"/>
+                        <field name="stage_id" force_save="1" options="{'no_create': True}"
+                               invisible="choose_step != 'next_worklow_step'"/>
+                        <field name="compute_steps" invisible="1" options="{'no_create': True}"/>
+                        <field name="crm_checklist_tracking_id" domain="[('id', 'in', compute_steps)]" required="choose_step == 'jump_next_checklist_step'"
+                               options="{'no_create': True}" invisible="choose_step == 'next_worklow_step'"/>
+
+                    </group>
+                    <group>
+                        <field name="file_name" invisible="1"/>
+                        <field name="attachment_file" filename="file_name" readonly="is_next_workflow"
+                               invisible="choose_step != 'next_worklow_step'"/>
+<!--                        <field name="attachment_ids" widget="many2many_binary" readonly="is_next_workflow"-->
+<!--                               invisible="choose_step != 'next_worklow_step'" options="{'no_create': True}" />-->
+                        <field name="comments" readonly="is_next_workflow" invisible="choose_step != 'next_worklow_step'"/>
+                    </group>
+                    <group/>
+                </group>
+
+                <footer>
+                    <button string="Add" name="action_checklist_tracking" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_checklist_tracking_wizard_wizard" model="ir.actions.act_window">
+        <field name="name">Checklist Tracking Next</field>
+        <field name="res_model">checklist.tracking.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+
+    <record id="view_previous_checklist_tracking_wizard" model="ir.ui.view">
+        <field name="name">previous.checklist.tracking.form.wizard</field>
+        <field name="model">checklist.tracking.previous</field>
+        <field name="arch" type="xml">
+            <form string="Checklist Tracking Previous">
+                <group>
+                    <group>
+                        <field name="choose_step" widget="radio" options="{'horizontal': false}"/>
+                        <field name="lead_id" invisible="1" options="{'no_create': True}"/>
+                        <field name="compute_steps" invisible="1" options="{'no_create': True}"/>
+                        <field name="crm_checklist_tracking_id" domain="[('id', 'in', compute_steps)]" required="choose_step == 'jump_previous_checklist_step'"
+                               options="{'no_create': True}" invisible="choose_step == 'just_before_step'"/>
+                    </group>
+                    <group>
+                        <field name="prev_department_id" force_save="1" invisible="1" options="{'no_create': True}"/>
+                        <field name="prev_assigned_to_id" force_save="1" invisible="1" readonly="1" options="{'no_create': True}"/>
+                    </group>
+
+                </group>
+
+                <footer>
+                    <button string="Apply" name="action_previous_checklist" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_previous_checklist_tracking_wizard" model="ir.actions.act_window">
+        <field name="name">Checklist Tracking Previous</field>
+        <field name="res_model">checklist.tracking.previous</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+
+</odoo>
+

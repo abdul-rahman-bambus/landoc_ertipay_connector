@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_template_whatsapp_tree" model="ir.ui.view">
+        <field name="name">template.whatsapp.tree</field>
+        <field name="model">template.whatsapp</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name" readonly="state != 'draft'"/>
+                <field name="model_id" readonly="state != 'draft'"/>
+                <field name="account_id" readonly="state != 'draft'"/>
+                <field name="state" readonly="state != 'draft'"/>
+                <field name="trg_selection_field_id" readonly="state != 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Filter View -->
+    <record id="view_template_whatsapp_filter" model="ir.ui.view">
+        <field name="name">view.template.whatsapp.filter</field>
+        <field name="model">template.whatsapp</field>
+        <field name="arch" type="xml">
+            <search string="Search Template Whatsapp">
+                <field name="name" string="Template" filter_domain="[('name', 'ilike', self)]"/>
+                <field name="model" string="Model" filter_domain="[('model', 'ilike', self)]"/>
+
+                <filter string="Archived Template" domain="[('active', '=', False)]" name="archived_template"/>
+
+                <group string="Group By">
+                    <filter string="Model" name="group_by_model" domain="[]" context="{'group_by': 'model_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_template_whatsapp_form" model="ir.ui.view">
+        <field name="name">template.whatsapp.form</field>
+        <field name="model">template.whatsapp</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="%(whatsapp_business.message_preview_action_from_template)d" string="Preview"
+                            type="action" target="new" invisible="state == 'deleted'"
+                            context="{'active_id': id, 'dialog_size': 'medium'}"/>
+
+                    <button name="button_meta_validation" invisible="is_update_template or state != 'draft'"
+                            string="Meta Validation" type="object"/>
+                    <button name="button_set_to_submitted"
+                            invisible="state != 'draft' or not is_update_template"
+                            string="Set to submit" type="object"/>
+                    <button name="button_update_template" invisible="not is_update_template or state != 'draft'"
+                            string="Update Template" type="object"/>
+                    <button name="button_delete_template"
+                            invisible="not is_update_template or state in ['draft', 'deleted']"
+                            string="Delete Template" type="object"/>
+
+
+                    <button name="button_reset_to_draft" string="Reset to draft"
+                            invisible="state not in ['rejected', 'approved']" type="object"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved"/>
+                </header>
+                <sheet>
+                    <field name="active" invisible="1"/>
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" readonly="state != 'draft'" required="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="account_id" required="1" readonly="state != 'draft'"/>
+                            <field name="model_id" required="1" readonly="state != 'draft'"/>
+                            <field name="model" invisible="1" readonly="state != 'draft'"/>
+                            <field name="phone_field" widget="DynamicModelFieldSelectorChar" required="1"
+                                   readonly="state != 'draft'" options="{'model': 'model'}"/>
+                            <field name="category_type" required="1" readonly="state != 'draft'"/>
+                            <field name="footer_text" readonly="state != 'draft'"/>
+                            <field name="meta_template_name" invisible="1"/>
+                            <field name="meta_template_id" invisible="1"/>
+                            <field name="is_update_template" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="lang_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                            <field name="header_type"
+                                   readonly="state != 'draft'" required="1"/>
+                            <field name="header_text"
+                                   invisible="header_type != 'text'" required="header_type == 'text'"
+                                   readonly="state != 'draft'"/>
+                            <field name="header_attachment_ids"
+                                   widget="many2many_binary"
+                                   options="{'accepted_file_extensions': 'image/jpeg, image/png', 'number_of_files': 1}"
+                                   invisible="header_type != 'image'" readonly="state != 'draft'"/>
+                            <field name="header_attachment_ids"
+                                   widget="many2many_binary" readonly="state != 'draft'"
+                                   options="{
+                                    'accepted_file_extensions': 'text/plain, application/pdf, application/vnd.ms-powerpoint, application/msword, application/vnd.ms-excel,
+                                    application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.openxmlformats-officedocument.presentationml.presentation,
+                                    application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                    'number_of_files': 1
+                                }"
+                                   invisible="header_type != 'document' or report_id != False"/>
+                            <field name="header_attachment_ids"
+                                   widget="many2many_binary"
+                                   options="{'accepted_file_extensions': 'video/mp4', 'number_of_files': 1}"
+                                   invisible="header_type != 'video'" readonly="state != 'draft'"/>
+                            <field name="report_id"
+                                   invisible="header_type != 'document' or header_attachment_ids"
+                                   readonly="state != 'draft'"/>
+                            <field name="file_data_attachments" invisible="1"/>
+
+                            <field name="trigger" readonly="state != 'draft'"/>
+                            <field name="trigger_field_ids" invisible="1" readonly="state != 'draft'"
+                                   required="trigger in ['on_state_set']"/>
+                            <field name="trg_selection_field_id" placeholder="Select a value..."
+                                   options="{'no_open': True, 'no_create': True}"
+                                   invisible="not trigger_field_ids"
+                                   required="trigger in ['on_state_set']" readonly="state != 'draft'"
+                            />
+                            <div invisible="trigger not in ['on_state_set']">
+                                <b invisible="trigger_field_ids" class="text-danger">There is no status field for this
+                                    model
+                                </b>
+                            </div>
+                            <field name="meta_template_state" invisible="state != 'draft' or not is_update_template"
+                                   readonly="1"/>
+                            <field name="media_id" invisible="1"/>
+                            <field name="media_url" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page id="content" name="Content">
+                            <field name="body" readonly="state != 'draft'" widget="whatsapp_business_variables"
+                                   class="oe-bordered-editor"
+                                   required="1"/>
+                            <!--                          widget="html_mail" options="{'dynamic_placeholder': true}" readonly="state != 'draft'"-->
+                        </page>
+                        <page name="Variables">
+                            <field name="variables_lines" readonly="state != 'draft'">
+                                <list editable="bottom" create="false" delete="false">
+                                    <field name="sequence" readonly="1" column_invisible="1" force_save="1"/>
+                                    <field name="name" readonly="1" force_save="1"/>
+                                    <field name="temp_value" required="1"/>
+                                    <field name="model" column_invisible="1"/>
+                                    <field name="variable_field" required="1" widget="DynamicModelFieldSelectorChar"
+                                           options="{'model': 'model'}"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page name="Additional Buttons">
+                            <group>
+                                <group string="URL">
+                                    <field name="is_url" readonly="state != 'draft'"/>
+                                    <field name="url_name" readonly="state != 'draft'" required="is_url"
+                                           invisible="not is_url"/>
+                                    <field name="url_link" readonly="state != 'draft'" required="is_url"
+                                           invisible="not is_url"/>
+                                </group>
+                                <group string="Phone Number">
+                                    <field name="is_phone_number" readonly="state != 'draft'"/>
+                                    <field name="phone_name" readonly="state != 'draft'" required="is_phone_number"
+                                           invisible="not is_phone_number"/>
+                                    <field name="phone_no" readonly="state != 'draft'" required="is_phone_number"
+                                           invisible="not is_phone_number"/>
+                                </group>
+                                <group string="Quick Reply">
+                                    <field name="is_quick" readonly="state != 'draft'"/>
+                                    <field name="quick_name" readonly="state != 'draft'" required="is_quick"
+                                           invisible="not is_quick"/>
+                                </group>
+                            </group>
+
+                        </page>
+                        <page name="Location Info" invisible="header_type != 'location'">
+                            <group string="Location">
+                                <group>
+                                    <field name="location_latitude_field" widget="DynamicModelFieldSelectorChar"
+                                           required="header_type == 'location'" readonly="state != 'draft'"
+                                           options="{'model': 'model'}"/>
+                                    <field name="location_longitude_field" widget="DynamicModelFieldSelectorChar"
+                                           required="header_type == 'location'" readonly="state != 'draft'"
+                                           options="{'model': 'model'}"/>
+                                    <field name="location_name_field" widget="DynamicModelFieldSelectorChar"
+                                           required="header_type == 'location'" readonly="state != 'draft'"
+                                           options="{'model': 'model'}"/>
+                                    <field name="location_address_field" widget="DynamicModelFieldSelectorChar"
+                                           required="header_type == 'location'" readonly="state != 'draft'"
+                                           options="{'model': 'model'}"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_template_whatsapp" model="ir.actions.act_window">
+        <field name="name">WhatsApp Template</field>
+        <field name="res_model">template.whatsapp</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_template_whatsapp_filter"/>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_whatsapp_template_info"
+              name="Template"
+              sequence="3"
+              parent="menu_whatsapp_business_root"
+              action="action_template_whatsapp"/>
+</odoo>
+

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+         <!-- Form: district -->
+        <record id="res_district_form_view" model="ir.ui.view">
+            <field name="name">res.district.form</field>
+            <field name="model">res.district</field>
+            <field name="arch" type="xml">
+                <form string="District">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                            <group>
+                                <field name="zone_id"/>
+                            </group>
+                        </group>
+
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- List: district -->
+        <record id="res_district_list_view" model="ir.ui.view">
+            <field name="name">res.district.list</field>
+            <field name="model">res.district</field>
+            <field name="arch" type="xml">
+                <list string="District">
+                    <field name="name"/>
+                    <field name="zone_id"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Form: Village -->
+        <record id="res_village_form_view" model="ir.ui.view">
+            <field name="name">res.village.form</field>
+            <field name="model">res.village</field>
+            <field name="arch" type="xml">
+                <form string="Village">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="district_id"/>
+                                <field name="start_date"/>
+                            </group>
+                            <group>
+                                <field name="sro_id"/>
+                                <field name="zone_id"/>
+                                <field name="end_date"/>
+                            </group>
+                        </group>
+
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- List: Village -->
+        <record id="res_village_list_view" model="ir.ui.view">
+            <field name="name">res.village.list</field>
+            <field name="model">res.village</field>
+            <field name="arch" type="xml">
+                <list string="Village">
+                    <field name="name"/>
+                    <field name="sro_id"/>
+                    <field name="district_id"/>
+                    <field name="zone_id"/>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Form: Zone -->
+        <record id="res_zone_form_view" model="ir.ui.view">
+            <field name="name">res.zone.form</field>
+            <field name="model">res.zone</field>
+            <field name="arch" type="xml">
+                <form string="Zone">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                        </group>
+
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- List: Zone -->
+        <record id="res_zone_list_view" model="ir.ui.view">
+            <field name="name">res.zone.list</field>
+            <field name="model">res.zone</field>
+            <field name="arch" type="xml">
+                <list string="Zone">
+                    <field name="name"/>
+                </list>
+            </field>
+        </record>
+
+         <!-- Search: District -->
+        <record id="district_master_search_view" model="ir.ui.view">
+            <field name="name">district.master.search</field>
+            <field name="model">res.district</field>
+            <field name="arch" type="xml">
+                <search string="District">
+                    <field name="name" string="District"
+                           filter_domain="[('name', 'ilike', self)]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Zone" name="zone" context="{'group_by':'zone_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+           <!-- Search: Village -->
+        <record id="res_village_search_view" model="ir.ui.view">
+            <field name="name">res.village.search</field>
+            <field name="model">res.village</field>
+            <field name="arch" type="xml">
+                <search string="Village">
+                    <field name="name" string="Village"
+                           filter_domain="[('name', 'ilike', self)]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Sub Registrar Office" name="sub_registrar_office" context="{'group_by':'sro_id'}"/>
+                        <filter string="District" name="district" context="{'group_by':'district_id'}"/>
+                        <filter string="Zone" name="zone" context="{'group_by':'zone_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+
+        <!-- district Window: Action -->
+        <record id="res_district_act_window" model="ir.actions.act_window">
+            <field name="name">District</field>
+            <field name="res_model">res.district</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    There is no examples click here to add new ModelTitle.
+                </p>
+            </field>
+        </record>
+
+        <!-- Village Window: Action -->
+        <record id="res_village_act_window" model="ir.actions.act_window">
+            <field name="name">Village</field>
+            <field name="res_model">res.village</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    There is no examples click here to add new ModelTitle.
+                </p>
+            </field>
+        </record>
+
+        <!-- Zone Window: Action -->
+        <record id="res_zone_act_window" model="ir.actions.act_window">
+            <field name="name">Zone</field>
+            <field name="res_model">res.zone</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    There is no examples click here to add new ModelTitle.
+                </p>
+            </field>
+        </record>
+
+        <!-- Zone Menuitem -->
+        <menuitem name="Zone" id="res_zone_menu" parent="master_data_main_menu" groups="custom_landoc.group_landoc_manager"
+                  action="res_zone_act_window" sequence='1'/>
+
+        <!-- district Menuitem -->
+        <menuitem name="District" id="res_district_menu" parent="master_data_main_menu" groups="custom_landoc.group_landoc_manager"
+                  action="res_district_act_window" sequence='2'/>
+        
+        <!-- Village Menuitem -->
+        <menuitem name="Village" id="res_village_menu" parent="master_data_main_menu" groups="custom_landoc.group_landoc_manager"
+                  action="res_village_act_window" sequence='4'/>
+
+
+    </data>
+</odoo>
+

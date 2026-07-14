@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+          <record id="custom_crm_hr_employee_form_inherit" model="ir.ui.view">
+            <field name="name">custom.hr.employee.form.inherit</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='mobile_phone']" position="attributes">
+                    <attribute name="placeholder">+91 9876543210</attribute>
+                    <attribute name="required">1</attribute>
+                    <attribute name="string">Whatsapp No</attribute>
+                </xpath>
+                <xpath expr="//field[@name='identification_id']" position="attributes">
+                    <attribute name="string">Aadhaar No.</attribute>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</odoo>

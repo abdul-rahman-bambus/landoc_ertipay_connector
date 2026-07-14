@@ -1,0 +1,35 @@
+<odoo>
+    <record id="view_audio_transcriber_wizard" model="ir.ui.view">
+        <field name="name">audio.transcriber.form.wizard</field>
+        <field name="model">audio.transcriber.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Audio Transcriber">
+                <group>
+                    <group>
+                        <field name="name"/>
+                        <field name="file_name" invisible="1"/>
+                        <field name="audio_file" filename="file_name"/>
+                        <button name="transcribe_audio" type="object" string="Transcribe" class="btn-primary"/>
+                    </group>
+                    <group/>
+                </group>
+                <group>
+                    <field name="transcription"/>
+                </group>
+            
+                <footer>
+                    <button string="Add" name="action_add_chatter" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_audio_transcriber_wizard" model="ir.actions.act_window">
+        <field name="name">Audio Transcriber</field>
+        <field name="res_model">audio.transcriber.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

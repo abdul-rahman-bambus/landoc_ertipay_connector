@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_res_config_lang_inherit" model="ir.ui.view">
+            <field name="name">res.users.form.inherit</field>
+            <field name="model">res.users</field>
+            <field name="inherit_id" ref="base.view_users_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='preferences']/group/group[@name='preferences']/field[@name='tz']" position="before">
+                    <field name="voice_to_text_lang_id"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_res_config_lang_preference_inherit" model="ir.ui.view">
+            <field name="name">res.users.form.inherit</field>
+            <field name="model">res.users</field>
+            <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='preferences_page']/group[@name='preferences']/group[2]/field[@name='tz']" position="before">
+                    <field name="voice_to_text_lang_id"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!--  ########## Record Rules ######### -->
+
+        <!--  ################################# -->
+        <!--  ## Inheriting base record rule ## -->
+        <!--  ################################# -->
+        <function model="ir.model.data" name="write">
+            <value model="ir.model.data"
+                   search="[('module', '=', 'crm'), ('name', 'in', ['crm_rule_personal_lead', 'crm_rule_all_lead'])]"/>
+            <value eval="{'noupdate': False}"/>
+        </function>
+
+        <!-- RULE: CRM Personal rule disabled -->
+        <record id="crm.crm_rule_personal_lead" model="ir.rule">
+            <field name="groups" eval="False"/>
+            <field name="active" eval="False"/>
+        </record>
+
+        <!-- RULE: CRM All lead rule disabled -->
+        <record id="crm.crm_rule_all_lead" model="ir.rule">
+            <field name="groups" eval="False"/>
+            <field name="active" eval="False"/>
+        </record>
+
+        <!-- ## ..... Ends here .......... ## -->
+
+
+        <!--  ########################  -->
+        <!--  ## Landoc Record Rule ##  -->
+        <!--  ########################  -->
+
+        <!-- RULE: CRM Normal User -->
+        <record id="crm_lead_landoc_user_rule" model="ir.rule">
+            <field name="name">Landoc CRM Normal User</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="domain_force">[
+                        '&amp;',
+                        ('company_id', 'in', user.company_ids.ids),
+                        ('user_id', '=', user.id)
+                    ]
+            </field>
+            <field name="groups" eval="[(4, ref('custom_landoc.group_landoc_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- RULE: CRM Team Lead User -->
+        <record id="crm_landoc_team_lead_user_rule" model="ir.rule">
+            <field name="name">Landoc CRM Team Lead User</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+             <field name="domain_force">
+                [
+                '&amp;',
+                    ('company_id', 'in', user.company_ids.ids),
+                    '|',
+
+                        # CASE 1 → Team Lead → see team records
+                        ('team_id.user_id', '=', user.id),
+
+                        # CASE 2 → Not Team Lead → own + allowed departments
+                        ('user_id', '=', user.id),
+                ]
+            </field>
+            <field name="groups" eval="[(4, ref('custom_landoc.group_landoc_crm_team_lead_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- RULE: Marketing Normal User -->
+        <record id="crm_lead_landoc_marketing_rule" model="ir.rule">
+            <field name="name">Landoc Marketing User Leads</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="domain_force">[
+                '&amp;',
+                ('company_id', 'in', user.company_ids.ids),
+                '&amp;',
+
+                ('assigned_to_id', '=', user.id),
+                ('team_id', 'in', user.allowed_department_ids.ids),
+                ]
+            </field>
+            <field name="groups" eval="[(4, ref('custom_landoc.group_landoc_marketing_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- RULE: Marketing Team Lead User -->
+        <record id="crm_lead_marketing_team_lead_user_rule" model="ir.rule">
+            <field name="name">Landoc Marketing Team Lead User</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="domain_force">
+                [
+                '&amp;',
+                    ('company_id', 'in', user.company_ids.ids),
+                    '|',
+
+                        # CASE 1 → Team Lead → see team records
+                        ('team_id.user_id', '=', user.id),
+
+                        # CASE 2 → Not Team Lead → own + allowed departments
+                        '&amp;',
+                            '|',
+                                ('user_id', '=', user.id),
+                                ('assigned_to_id', '=', user.id),
+                            ('team_id', 'in', user.allowed_department_ids.ids)
+                ]
+            </field>
+            <field name="groups" eval="[(4, ref('custom_landoc.group_landoc_marketing_team_lead_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+
+        <!-- RULE: Internal Normal User -->
+        <record id="crm_lead_landoc_internal_rule" model="ir.rule">
+            <field name="name">Landoc Internal User Leads</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="domain_force">[
+                '&amp;',
+                ('company_id', 'in', user.company_ids.ids),
+                '&amp;',
+
+                ('assigned_to_id', '=', user.id),
+                ('team_id', 'in', user.allowed_department_ids.ids),
+                ]
+            </field>
+            <field name="groups" eval="[(4, ref('custom_landoc.group_landoc_internal_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- RULE: Internal Team Lead User -->
+        <record id="crm_lead_internal_team_lead_user_rule" model="ir.rule">
+            <field name="name">Landoc Internal Team Lead User</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="domain_force">
+                [
+                '&amp;',
+                    ('company_id', 'in', user.company_ids.ids),
+                    '|',
+
+                        # CASE 1 → Team Lead → see team records
+                        ('team_id.user_id', '=', user.id),
+
+                        # CASE 2 → Not Team Lead → own + allowed departments
+                        '&amp;',
+                            '|',
+                                ('user_id', '=', user.id),
+                                ('assigned_to_id', '=', user.id),
+                            ('team_id', 'in', user.allowed_department_ids.ids)
+                ]
+            </field>
+            <field name="groups" eval="[(4, ref('custom_landoc.group_landoc_internal_team_lead_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- RULE: External Normal User -->
+        <record id="crm_lead_landoc_external_rule" model="ir.rule">
+            <field name="name">Landoc External User Leads</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="domain_force">[
+                '&amp;',
+                ('company_id', 'in', user.company_ids.ids),
+                '&amp;',
+
+                ('assigned_to_id', '=', user.id),
+                ('team_id', 'in', user.allowed_department_ids.ids),
+                ]
+            </field>
+            <field name="groups" eval="[(4, ref('custom_landoc.group_landoc_external_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- RULE: External Team Lead User -->
+        <record id="crm_lead_external_team_lead_user_rule" model="ir.rule">
+            <field name="name">Landoc External Team Lead User</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="domain_force">
+                [
+                '&amp;',
+                    ('company_id', 'in', user.company_ids.ids),
+                    '|',
+
+                        # CASE 1 → Team Lead → see team records
+                        ('team_id.user_id', '=', user.id),
+
+                        # CASE 2 → Not Team Lead → own + allowed departments
+                        '&amp;',
+                            '|',
+                                ('user_id', '=', user.id),
+                                ('assigned_to_id', '=', user.id),
+                            ('team_id', 'in', user.allowed_department_ids.ids)
+                ]
+            </field>
+            <field name="groups" eval="[(4, ref('custom_landoc.group_landoc_external_team_lead_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- RULE: Accounting Normal User -->
+        <record id="crm_lead_landoc_accounting_rule" model="ir.rule">
+            <field name="name">Landoc Accounting User Leads</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="domain_force">[
+                '&amp;',
+                ('company_id', 'in', user.company_ids.ids),
+                '&amp;',
+
+                ('assigned_to_id', '=', user.id),
+                ('team_id', 'in', user.allowed_department_ids.ids),
+                ]
+            </field>
+            <field name="groups" eval="[(4, ref('custom_landoc.group_landoc_accounting_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- RULE: Accounting Team Lead User -->
+        <record id="crm_lead_accounting_team_lead_user_rule" model="ir.rule">
+            <field name="name">Landoc Accounting Team Lead User</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="domain_force">
+                [
+                '&amp;',
+                    ('company_id', 'in', user.company_ids.ids),
+                    '|',
+
+                        # CASE 1 → Team Lead → see team records
+                        ('team_id.user_id', '=', user.id),
+
+                        # CASE 2 → Not Team Lead → own + allowed departments
+                        '&amp;',
+                            '|',
+                                ('user_id', '=', user.id),
+                                ('assigned_to_id', '=', user.id),
+                            ('team_id', 'in', user.allowed_department_ids.ids)
+                ]
+            </field>
+            <field name="groups" eval="[(4, ref('custom_landoc.group_landoc_accounting_team_lead_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- RULE: Legal Normal User -->
+        <record id="crm_lead_landoc_legal_rule" model="ir.rule">
+            <field name="name">Landoc Legal User Leads</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="domain_force">[
+                '&amp;',
+                ('company_id', 'in', user.company_ids.ids),
+                '&amp;',
+
+                ('assigned_to_id', '=', user.id),
+                ('team_id', 'in', user.allowed_department_ids.ids),
+                ]
+            </field>
+            <field name="groups" eval="[(4, ref('custom_landoc.group_landoc_legal_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- RULE: Legal Team Lead User -->
+        <record id="crm_lead_legal_team_lead_user_rule" model="ir.rule">
+            <field name="name">Landoc Legal Team Lead User</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="domain_force">
+                [
+                '&amp;',
+                    ('company_id', 'in', user.company_ids.ids),
+                    '|',
+
+                        # CASE 1 → Team Lead → see team records
+                        ('team_id.user_id', '=', user.id),
+
+                        # CASE 2 → Not Team Lead → own + allowed departments
+                        '&amp;',
+                            '|',
+                                ('user_id', '=', user.id),
+                                ('assigned_to_id', '=', user.id),
+                            ('team_id', 'in', user.allowed_department_ids.ids)
+                ]
+            </field>
+            <field name="groups" eval="[(4, ref('custom_landoc.group_landoc_legal_team_lead_user'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <!-- RULE: Manager User -->
+        <record id="crm_lead_landoc_manager_rule" model="ir.rule">
+            <field name="name">Landoc Manager User</field>
+            <field name="model_id" ref="crm.model_crm_lead"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+            <field name="groups" eval="[(4, ref('custom_landoc.group_landoc_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+
+    </data>
+</odoo>
+

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="content_checklists_wiz_form" model="ir.ui.view">
+            <field name="name">content.checklists.wiz.form</field>
+            <field name="model">content.checklists.wiz</field>
+            <field name="arch" type="xml">
+                <form string="Content Checklists">
+                    <sheet>
+                        <group>
+                            <group>
+                                <label for="title" string="Name"/>
+                                <div class="o_row">
+                                    <field name="title" placeholder="Title" domain="[]" required="1"
+                                           options="{&quot;no_open&quot;: True}"/>
+                                    <field name="contact_name" placeholder="Name" required="1"/>
+                                </div>
+                                <label for="street" string="Address"/>
+                                <div class="o_address_format">
+                                    <field name="street" placeholder="Street..." class="o_address_street" required="1"/>
+                                    <field name="street2" placeholder="Street 2..." class="o_address_street" required="1"/>
+                                    <field name="city_id" placeholder="City" class="o_address_city" required="1"
+                                           options="{'no_open': False, 'no_create_edit': False}"/>
+                                    <field name="zip" placeholder="ZIP" class="o_address_zip" required="1"/>
+                                    <field name="state_id" class="o_address_state" placeholder="State" required="1"
+                                           options="{&quot;no_open&quot;: True}"/>
+                                    <field name="country_id" placeholder="Country" class="o_address_country" required="1"
+                                           options="{&quot;no_open&quot;: True, &quot;no_create&quot;: True}"/>
+                                </div>
+                            </group>
+                            <group>
+                                <field name="checklist_line_id" invisible="1"/>
+                                <field name="aadhaar_no" required="1"/>
+                                <field name="mobile" required="1"/>
+                                <field name="relation" required="1"/>
+                                <field name="aadhaar_front_file_name"  invisible="1"/>
+                                <field name="aadhaar_front_attachment" required="1" filename="aadhaar_front_file_name" widget="binary"/>
+                                <field name="aadhaar_back_file_name"  invisible="1"/>
+                                <field name="aadhaar_back_attachment" required="1" filename="aadhaar_back_file_name" widget="binary"/>
+                            </group>
+                        </group>
+                        <footer>
+                            <button string="Add" name="add_checklist_info" type="object" class="btn-primary"/>
+                            <button string="Cancel" class="btn-secondary" special="cancel"/>
+                        </footer>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="content_checklists_wiz_act_window" model="ir.actions.act_window">
+            <field name="name">Content Checklists</field>
+            <field name="res_model">content.checklists.wiz</field>
+            <field name="view_mode">form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    There is no examples click here to add new ModelTitle.
+                </p>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>

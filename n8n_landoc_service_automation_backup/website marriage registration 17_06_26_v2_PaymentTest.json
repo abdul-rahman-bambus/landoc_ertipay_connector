@@ -1,0 +1,1484 @@
+{
+  "name": "website marriage registration 17_06_26_v2_PaymentTest",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "Purpose:\nThis is the V2 staging workflow.\nProduction workflow should not be affected.\nAI should not directly commit price, timeline, eligibility, or Odoo updates without workflow validation.\n\n\n1. Inbound Message\n2. Session Lookup\n3. Language Handling\n4. Service Detection\n5. Service Router\n6. Service Workflow Call\n7. Odoo Sync\n8. Response Builder\n9. Send Reply\n10. Error / Human Handoff",
+        "width": 912
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7728,
+        -1040
+      ],
+      "id": "aca6bfc3-7085-4b65-a870-6b6b2fd6aa97",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"channel\": \"chat\",\n  \"customer_id\": \"{{ $json.sessionId || $json.chatId || 'test_customer' }}\",\n  \"phone\": null,\n  \"message\": \"{{ $json.chatInput || $json.message || $json.text || '' }}\",\n  \"language\": \"{{ $json.language || null }}\",\n  \"current_service\": null,\n  \"current_stage\": null,\n  \"odoo_lead_id\": null,\n  \"source_workflow\": \"staging_v2\",\n\n  \"has_attachment\": \"{{ $json.has_attachment }}\",\n  \"attachment_count\": \"{{ $json.attachment_count }}\",\n  \"attachment_file_name\": \"{{ $json.attachment_file_name }}\",\n  \"attachment_file_extension\": \"{{ $json.attachment_file_extension }}\",\n  \"attachment_mime_type\": \"{{ $json.attachment_mime_type }}\",\n  \"attachment_file_size\": \"{{ $json.attachment_file_size }}\",\n  \"attachment_binary_key\": \"{{ $json.attachment_binary_key }}\",\n  \"attachment_info\": \"{{ $json.attachment_info }}\",\n  \"attachment_base64\": \"{{ $json.attachment_base64 }}\",\n  \"attachment_base64_available\": \"{{ $json.attachment_base64_available }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -7424,
+        -432
+      ],
+      "id": "61bb361c-04a3-4e61-891d-85e88da27485",
+      "name": "SET_Normalized_Input"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -6544,
+        -160
+      ],
+      "id": "57669d3b-3993-41cb-a7f3-53ecbdb4c702",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "rqWv0WUdgK90eiJJ",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0085c59e-818a-4527-821e-0645a95d6cef",
+              "name": "output",
+              "value": "Welcome to LANDOC Service Assistant.  Please choose the service you need:  1. Marriage Registration 2. EC Process 3. Talk to Support",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5600,
+        -256
+      ],
+      "id": "ad9016de-1eea-44cf-a43c-8be8de67b2dd",
+      "name": "SET_Response_Fallback_Menu"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.active_service }}",
+                    "rightValue": "marriage_registration",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f6b910cf-6ec6-4ae1-824b-9878fe549d3e"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -5920,
+        -880
+      ],
+      "id": "15e550d6-8853-454d-af46-cc81158d0d61",
+      "name": "SWITCH_Active_Service"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "087d4ef9-278a-48c1-80df-bd86009d1e28",
+              "name": "customer_id",
+              "value": "={{ $('SET_Normalized_Input').item.json.customer_id }}",
+              "type": "string"
+            },
+            {
+              "id": "97b15bf2-80cb-450b-807a-5bbdaaf26374",
+              "name": "channel",
+              "value": "={{ $('SET_Normalized_Input').item.json.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "f67f45b3-ff9a-48c9-8f2c-c89ac119128e",
+              "name": "active_service",
+              "value": "={{ $('DT_Get_Customer_Session').item.json.active_service || 'marriage_registration' }}",
+              "type": "string"
+            },
+            {
+              "id": "b01e7c73-8724-4bb4-8cad-148bfe70bab8",
+              "name": "message",
+              "value": "={{ $('SET_Normalized_Input').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "de373591-8656-4298-92b1-20fc9fc3a7be",
+              "name": "current_stage",
+              "value": "={{ $('DT_Get_Customer_Session').item.json.current_stage || 'start' }}",
+              "type": "string"
+            },
+            {
+              "id": "7953f9b3-b95e-44c4-b4f1-9a01db6f96a8",
+              "name": "language",
+              "value": "={{ $('DT_Get_Customer_Session').item.json.language || 'English' }}",
+              "type": "string"
+            },
+            {
+              "id": "c80519ba-3cfc-4f34-9586-4750e8006825",
+              "name": "session_data",
+              "value": "={{ $('DT_Get_Customer_Session').item.json.session_data || '{}' }}",
+              "type": "string"
+            },
+            {
+              "id": "9a172acf-8bf8-4420-953b-2a73a83e6aff",
+              "name": "has_attachment",
+              "value": "={{ $('SET_Normalized_Input').item.json.has_attachment }}",
+              "type": "string"
+            },
+            {
+              "id": "4dfd17e9-ed30-4ef9-a0b9-40ee618b27c0",
+              "name": "attachment_count",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_count }}",
+              "type": "string"
+            },
+            {
+              "id": "7a7b90d1-7e23-4570-9de5-173fae99d0a4",
+              "name": "attachment_info",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_info }}",
+              "type": "string"
+            },
+            {
+              "id": "a2ad21cc-6288-41bf-9552-470387a47e15",
+              "name": "has_attachment",
+              "value": "={{ $('SET_Normalized_Input').item.json.has_attachment }}",
+              "type": "string"
+            },
+            {
+              "id": "b8fe9bb1-ff90-40e2-bc60-ae0dfda2de9c",
+              "name": "attachment_count",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_count }}",
+              "type": "string"
+            },
+            {
+              "id": "d52922b4-0f17-4252-88bc-f123117be1f9",
+              "name": "attachment_file_name",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_file_name }}",
+              "type": "string"
+            },
+            {
+              "id": "82191f0b-673c-4362-b860-103d88c1f941",
+              "name": "attachment_file_extension",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_file_extension }}",
+              "type": "string"
+            },
+            {
+              "id": "77fda72a-a739-4b45-ac30-18eacdcc07f0",
+              "name": "attachment_mime_type",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_mime_type }}",
+              "type": "string"
+            },
+            {
+              "id": "36274d1f-7d37-4dc5-8bfe-7412b0cf667d",
+              "name": "attachment_file_size",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_file_size }}",
+              "type": "string"
+            },
+            {
+              "id": "2f971118-c6bf-49e0-ab45-6c9e67af61c8",
+              "name": "attachment_binary_key",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_binary_key }}",
+              "type": "string"
+            },
+            {
+              "id": "612d3005-d43a-45c4-89da-d393db7e4e42",
+              "name": "attachment_info",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_info }}",
+              "type": "string"
+            },
+            {
+              "id": "cbf89b5b-dc9b-4d49-b5a9-b1a19d7c501e",
+              "name": "attachment_base64",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_base64 }}",
+              "type": "string"
+            },
+            {
+              "id": "68bbe44c-3926-4338-ae25-a3f8034827bf",
+              "name": "attachment_base64_available",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_base64_available }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -6304,
+        -880
+      ],
+      "id": "fb360b2c-4a69-404d-9031-35c58be065c3",
+      "name": "SET_Active_Service_Context"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -7888,
+        -432
+      ],
+      "id": "16517740-e31e-4aed-9a85-268723f93047",
+      "name": "TRIGGER_Chat",
+      "webhookId": "b1e13524-1c34-4299-82db-db1b51ea8f1e"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "XmD4lzZUz3lZEMx6",
+          "mode": "list",
+          "cachedResultName": "landoc_customer_sessions",
+          "cachedResultUrl": "/projects/NHMe4GUiYYuTjeZP/datatables/XmD4lzZUz3lZEMx6"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "customer_id",
+              "keyValue": "={{ $json.customer_id }}"
+            }
+          ]
+        },
+        "limit": 1
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -7120,
+        -432
+      ],
+      "id": "48bb1aab-b981-49a0-8ef6-62a69213f357",
+      "name": "DT_Get_Customer_Session",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ed4307c1-d750-4828-babe-b8ab401c32e2",
+              "leftValue": "={{ $json.active_service }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "255692dd-ef52-4d16-b645-9bd31747bdde",
+              "leftValue": "={{ $json.id ? 'true' : 'false' }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -6864,
+        -432
+      ],
+      "id": "f4aa9407-fc26-4bb6-b400-b2211ff67fb6",
+      "name": "IF_Has_Active_Service"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Customer message:\n{{ $('SET_Normalized_Input').item.json.message }}",
+        "options": {
+          "systemMessage": "=You are a service classification assistant.\n\nYour only job is to classify the customer's message and return valid JSON.\n\nDo not answer the customer.\nDo not explain the service.\nDo not promise price, timeline, approval, eligibility, or completion.\nDo not create commitments.\nDo not call any external system.\n\nAvailable services:\n- marriage_registration\n\nClassify the customer message into one of these services.\n\nImportant classification rules:\n- If the customer mentions marriage, marriage registration, wedding registration, certificate for marriage, register marriage, or திருமண பதிவு, classify as marriage_registration.\n- If the customer says \"Marriage Registration\", classify as marriage_registration.\n- If the customer says \"I am looking for marriage registration\", classify as marriage_registration.\n- If the customer says only \"Hi\", \"Hello\", \"Vanakkam\", or a greeting, classify as unknown.\n- If the message is a number like 1, 2, or 3, classify as unknown because number meaning depends on the active service stage.\n- Do not set needs_human true unless the customer asks for a human/support person or has a complaint/escalation.\n\nReturn only valid JSON in this format:\n\n{\n  \"intent\": \"new_service_request | existing_request_followup | general_question | unclear | human_required\",\n  \"service\": \"marriage_registration | unknown\",\n  \"confidence\": 0.0,\n  \"language\": \"en | ta | tanglish | unknown\",\n  \"extracted_fields\": {},\n  \"needs_human\": false\n}\n\nCustomer message:\n{{ $('SET_Normalized_Input').item.json.message }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -6560,
+        -416
+      ],
+      "id": "c943855e-e277-42f7-8b2c-9206cffb3bd5",
+      "name": "AI_Classify_New_Service"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.output || $json.text || $json;\n\nlet parsed;\n\ntry {\n  if (typeof raw === 'string') {\n    parsed = JSON.parse(raw);\n  } else {\n    parsed = raw;\n  }\n} catch (error) {\n  parsed = {\n    intent: 'unclear',\n    service: 'unknown',\n    confidence: 0,\n    language: 'unknown',\n    extracted_fields: {},\n    needs_human: false\n  };\n}\n\nreturn [\n  {\n    json: {\n      ...$json,\n      intent: parsed.intent || 'unclear',\n      service: parsed.service || 'unknown',\n      confidence: parsed.confidence || 0,\n      language: parsed.language || 'unknown',\n      extracted_fields: parsed.extracted_fields || {},\n      needs_human: parsed.needs_human || false\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6192,
+        -416
+      ],
+      "id": "83acb114-9782-464c-bc47-d888828f9982",
+      "name": "CODE_Parse_Service_JSON"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.service }}",
+                    "rightValue": "marriage_registration",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "59916859-583e-414f-bee2-7e28ab76462b"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "bd6b4bdf-4eeb-447f-bb6d-e61ab45ce022",
+                    "leftValue": "={{ $json.service }}",
+                    "rightValue": "unknown",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": 0
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -5952,
+        -416
+      ],
+      "id": "9ac68a12-dae6-4010-872e-c534547e0e1b",
+      "name": "SWITCH_New_Service"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7e135e61-450e-4473-8827-6238b8d355d0",
+              "name": "customer_id",
+              "value": "={{ $('SET_Normalized_Input').item.json.customer_id }}",
+              "type": "string"
+            },
+            {
+              "id": "a3fccf85-0045-4fad-baea-c107c1afe624",
+              "name": "channel",
+              "value": "={{ $('SET_Normalized_Input').item.json.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "86550d4a-08bc-42b7-9df4-ce2a0a62a738",
+              "name": "message",
+              "value": "={{ $('SET_Normalized_Input').item.json.message }}",
+              "type": "string"
+            },
+            {
+              "id": "854f2e45-ae0e-4e3e-95f6-918bfd7eed62",
+              "name": "active_service",
+              "value": "={{ $json.active_service || 'marriage_registration' }}",
+              "type": "string"
+            },
+            {
+              "id": "f81b6dba-3150-42b7-9b0b-3b7e5c23e4a1",
+              "name": "current_stage",
+              "value": "=start",
+              "type": "string"
+            },
+            {
+              "id": "70b3b458-f80a-41d1-b95d-3b3db176a9c7",
+              "name": "language",
+              "value": "=",
+              "type": "string"
+            },
+            {
+              "id": "9cef205f-16a6-444d-b25c-564b05c46597",
+              "name": "session_data",
+              "value": "=",
+              "type": "string"
+            },
+            {
+              "id": "a4bb189d-6fab-4604-bbae-d1a67a3f643e",
+              "name": "has_attachment",
+              "value": "={{ $('SET_Normalized_Input').item.json.has_attachment }}",
+              "type": "string"
+            },
+            {
+              "id": "809b2868-52f1-4edc-a36c-d0351dda8098",
+              "name": "attachment_count",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_count }}",
+              "type": "string"
+            },
+            {
+              "id": "1fdc054a-e7d9-4087-a17d-9ddb9c59b27f",
+              "name": "attachment_info",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_info }}",
+              "type": "string"
+            },
+            {
+              "id": "cbab1137-e5d9-4623-b6a4-6efd26a738e2",
+              "name": "attachment_file_name",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_file_name }}",
+              "type": "string"
+            },
+            {
+              "id": "728c3879-2931-4c7b-9270-33f3eaaf2357",
+              "name": "attachment_file_extension",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_file_extension }}",
+              "type": "string"
+            },
+            {
+              "id": "8c4b323c-5ace-49c6-b749-996a65de74a7",
+              "name": "attachment_mime_type",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_mime_type }}",
+              "type": "string"
+            },
+            {
+              "id": "89462283-d797-448f-803f-59992a6c5502",
+              "name": "attachment_file_size",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_file_size }}",
+              "type": "string"
+            },
+            {
+              "id": "2a901a55-d075-4665-8b72-1c42665f93e9",
+              "name": "attachment_binary_key",
+              "value": "={{ $('SET_Normalized_Input').item.json.attachment_binary_key }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5600,
+        -544
+      ],
+      "id": "080a7b95-d789-44b5-90f5-828ee45183e3",
+      "name": "SET_New_Marriage_Service_Context"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "97b3aecb-3641-4d8c-a9ef-72f999f13e3e",
+              "name": "customer_id",
+              "value": "={{ $('SET_Normalized_Input').item.json.customer_id }}",
+              "type": "string"
+            },
+            {
+              "id": "73feef87-e5e6-4664-b9d9-b293ce16515f",
+              "name": "output",
+              "value": "={{ \n$('EXEC_Existing_Marriage_Service1').item.json.output ||\n$('EXEC_Existing_Marriage_Service1').item.json.reply ||\n$('EXEC_Existing_Marriage_Service1').item.json.last_reply ||\n'Please continue.'\n}}",
+              "type": "string"
+            },
+            {
+              "id": "90088597-c489-4efd-b880-0e3d3f02ba2d",
+              "name": "reply",
+              "value": "={{ \n$('EXEC_Existing_Marriage_Service1').item.json.reply ||\n$('EXEC_Existing_Marriage_Service1').item.json.output ||\n$('EXEC_Existing_Marriage_Service1').item.json.last_reply ||\n'Please continue.'\n}}",
+              "type": "string"
+            },
+            {
+              "id": "5e0d24b8-650d-4c2e-ad99-3d62efbd2bb2",
+              "name": "active_service",
+              "value": "={{ \n$('EXEC_Existing_Marriage_Service1').item.json.active_service ||\n$('DT_Get_Customer_Session').item.json.active_service ||\n'marriage_registration'\n}}",
+              "type": "string"
+            },
+            {
+              "id": "6ea57756-cebf-446c-bc41-944d3d191e16",
+              "name": "current_stage",
+              "value": "={{ \n$('EXEC_Existing_Marriage_Service1').item.json.current_stage ||\n$('DT_Get_Customer_Session').item.json.current_stage ||\n'start'\n}}",
+              "type": "string"
+            },
+            {
+              "id": "6103b93e-51d4-4d9d-9133-2cf27b151260",
+              "name": "language",
+              "value": "={{ \n$('EXEC_Existing_Marriage_Service1').item.json.language ||\n$('DT_Get_Customer_Session').item.json.language ||\n'English'\n}}",
+              "type": "string"
+            },
+            {
+              "id": "4a5caba1-5945-468a-b16e-ed699c41b303",
+              "name": "session_data",
+              "value": "={{ \n$('EXEC_Existing_Marriage_Service1').item.json.session_data &&\n$('EXEC_Existing_Marriage_Service1').item.json.session_data !== '{}'\n  ? $('EXEC_Existing_Marriage_Service1').item.json.session_data\n  : $('DT_Get_Customer_Session').item.json.session_data || '{}'\n}}",
+              "type": "string"
+            },
+            {
+              "id": "6e9d1ae1-5ce6-4fa0-92f2-696c909db379",
+              "name": "last_reply",
+              "value": "={{ \n$('EXEC_Existing_Marriage_Service1').item.json.last_reply ||\n$('EXEC_Existing_Marriage_Service1').item.json.reply ||\n$('EXEC_Existing_Marriage_Service1').item.json.output ||\n'Please continue.'\n}}",
+              "type": "string"
+            },
+            {
+              "id": "a056f4b6-2ba3-4cd5-b907-1d88ca2e5b1c",
+              "name": "close_session",
+              "value": "={{ $('EXEC_Existing_Marriage_Service1').item.json.close_session || false }}",
+              "type": "boolean"
+            },
+            {
+              "id": "d32b511e-4a06-4808-84d4-c112b2981291",
+              "name": "channel",
+              "value": "={{ $('SET_Normalized_Input').item.json.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "b4002162-d7fe-401e-aeb3-351d80745356",
+              "name": "updated_at",
+              "value": "={{ $now }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5056,
+        -880
+      ],
+      "id": "bc799be3-0928-4f7d-ba0d-8fdf8692ca13",
+      "name": "SET_Existing_Service_Result_Normalized"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7780ea36-1334-48ed-9615-208080759c61",
+              "name": "customer_id",
+              "value": "={{ $('SET_Normalized_Input').item.json.customer_id }}",
+              "type": "string"
+            },
+            {
+              "id": "43555d2f-5d8e-4590-adb4-cc2e3318616a",
+              "name": "channel",
+              "value": "={{ $('SET_Normalized_Input').item.json.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "ae307904-8f0d-4f73-8464-394e6e606502",
+              "name": "active_service",
+              "value": "={{ $('SET_Existing_Service_Result_Normalized').item.json.active_service || 'marriage_registration' }}",
+              "type": "string"
+            },
+            {
+              "id": "3af3725e-ff33-42fb-bb61-5747f89006f6",
+              "name": "current_stage",
+              "value": "={{ $('SET_Existing_Service_Result_Normalized').item.json.current_stage || 'start' }}",
+              "type": "string"
+            },
+            {
+              "id": "fe1d05aa-43f0-4dd2-814b-f3bb777e29b4",
+              "name": "language",
+              "value": "={{ $('SET_Existing_Service_Result_Normalized').item.json.language || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "755f2cda-2ef4-4721-a365-dd3f5bba2280",
+              "name": "session_data",
+              "value": "={{ $('SET_Existing_Service_Result_Normalized').item.json.session_data || '{}' }}",
+              "type": "string"
+            },
+            {
+              "id": "79cef232-905c-46cd-974b-ae2d1151a79d",
+              "name": "updated_at",
+              "value": "={{ $json.updated_at }}",
+              "type": "string"
+            },
+            {
+              "id": "60afaf7f-d559-45c5-a5e7-5bbb2c824eb2",
+              "name": "reply",
+              "value": "={{ $json.reply }}",
+              "type": "string"
+            },
+            {
+              "id": "dce527b9-a6ae-4c04-a09f-66d8dfece771",
+              "name": "last_reply",
+              "value": "={{ $('SET_Existing_Service_Result_Normalized').item.json.output || $('SET_Existing_Service_Result_Normalized').item.json.reply || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4832,
+        -880
+      ],
+      "id": "be573c08-c9d9-4304-ae37-26a6930f2ed4",
+      "name": "SET_Existing_Session_Update_Payload"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "XmD4lzZUz3lZEMx6",
+          "mode": "list",
+          "cachedResultName": "landoc_customer_sessions",
+          "cachedResultUrl": "/projects/NHMe4GUiYYuTjeZP/datatables/XmD4lzZUz3lZEMx6"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "customer_id",
+              "keyValue": "={{ $('SET_Existing_Service_Result_Normalized').item.json.customer_id }}"
+            },
+            {
+              "keyName": "channel",
+              "keyValue": "={{ $('SET_Existing_Service_Result_Normalized').item.json.channel }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "customer_id": "={{ $json.customer_id }}",
+            "channel": "={{ $json.channel }}",
+            "active_service": "={{ $('SET_Existing_Service_Result_Normalized').item.json.active_service }}",
+            "current_stage": "={{ $('SET_Existing_Service_Result_Normalized').item.json.current_stage }}",
+            "language": "={{ $('SET_Existing_Service_Result_Normalized').item.json.language }}",
+            "session_data": "={{ $('SET_Existing_Service_Result_Normalized').item.json.session_data }}",
+            "updated_at": "= {{ $json.updated_at }}",
+            "last_reply": "={{ $('SET_Existing_Service_Result_Normalized').item.json.last_reply }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "customer_id",
+              "displayName": "customer_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "active_service",
+              "displayName": "active_service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "current_stage",
+              "displayName": "current_stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "language",
+              "displayName": "language",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "session_data",
+              "displayName": "session_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_reply",
+              "displayName": "last_reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -4608,
+        -880
+      ],
+      "id": "29769168-e591-407e-9260-e84203a0a105",
+      "name": "DT_Update_Existing_Customer_Session",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "beb3b912-dc60-4dd7-96a0-a588a47af115",
+              "name": "output",
+              "value": "={{ \n$('SET_Existing_Service_Result_Normalized').item.json.output ||\n$('SET_Existing_Service_Result_Normalized').item.json.reply ||\n$('SET_Existing_Service_Result_Normalized').item.json.last_reply ||\n'Please continue.'\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4352,
+        -880
+      ],
+      "id": "946933a2-f8ce-4ce9-9d16-9fe753c32a98",
+      "name": "SET_Existing_Final_Chat_Response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "97b3aecb-3641-4d8c-a9ef-72f999f13e3e",
+              "name": "customer_id",
+              "value": "={{ $('SET_Normalized_Input').item.json.customer_id }}",
+              "type": "string"
+            },
+            {
+              "id": "d32b511e-4a06-4808-84d4-c112b2981291",
+              "name": "channel",
+              "value": "={{ $('SET_Normalized_Input').item.json.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "90088597-c489-4efd-b880-0e3d3f02ba2d",
+              "name": "reply",
+              "value": "={{ $json.reply || $json.output || $json.last_reply || 'Please continue.' }}",
+              "type": "string"
+            },
+            {
+              "id": "73feef87-e5e6-4664-b9d9-b293ce16515f",
+              "name": "output",
+              "value": "={{ $json.output || $json.reply || $json.last_reply || 'Please continue.' }}",
+              "type": "string"
+            },
+            {
+              "id": "5e0d24b8-650d-4c2e-ad99-3d62efbd2bb2",
+              "name": "active_service",
+              "value": "={{ $json.active_service || 'marriage_registration' }}",
+              "type": "string"
+            },
+            {
+              "id": "6ea57756-cebf-446c-bc41-944d3d191e16",
+              "name": "current_stage",
+              "value": "={{ $json.current_stage || 'start' }}",
+              "type": "string"
+            },
+            {
+              "id": "6103b93e-51d4-4d9d-9133-2cf27b151260",
+              "name": "language",
+              "value": "={{ $json.language || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "4a5caba1-5945-468a-b16e-ed699c41b303",
+              "name": "session_data",
+              "value": "={{ $json.session_data && $json.session_data !== '{}' ? $json.session_data : '{}' }}",
+              "type": "string"
+            },
+            {
+              "id": "a056f4b6-2ba3-4cd5-b907-1d88ca2e5b1c",
+              "name": "close_session",
+              "value": "={{ $json.close_session === true || $json.close_session === 'true' }}",
+              "type": "boolean"
+            },
+            {
+              "id": "b4002162-d7fe-401e-aeb3-351d80745356",
+              "name": "updated_at",
+              "value": "={{ $now }}",
+              "type": "string"
+            },
+            {
+              "id": "2b269dda-4e64-4452-bfb8-b0cdc4f3076b",
+              "name": "last_reply",
+              "value": "={{ $json.last_reply || $json.reply || $json.output || 'Please continue.' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5056,
+        -544
+      ],
+      "id": "b809d82e-c780-43d4-8a64-183fc81d3f1b",
+      "name": "SET_New_Service_Result_Normalized"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7780ea36-1334-48ed-9615-208080759c61",
+              "name": "customer_id",
+              "value": "={{ $('SET_Normalized_Input').item.json.customer_id }}",
+              "type": "string"
+            },
+            {
+              "id": "43555d2f-5d8e-4590-adb4-cc2e3318616a",
+              "name": "channel",
+              "value": "={{ $('SET_Normalized_Input').item.json.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "ae307904-8f0d-4f73-8464-394e6e606502",
+              "name": "active_service",
+              "value": "={{ $json.active_service || 'marriage_registration' }}",
+              "type": "string"
+            },
+            {
+              "id": "3af3725e-ff33-42fb-bb61-5747f89006f6",
+              "name": "current_stage",
+              "value": "={{ $json.current_stage || 'start' }}",
+              "type": "string"
+            },
+            {
+              "id": "fe1d05aa-43f0-4dd2-814b-f3bb777e29b4",
+              "name": "language",
+              "value": "={{ $json.language }}",
+              "type": "string"
+            },
+            {
+              "id": "755f2cda-2ef4-4721-a365-dd3f5bba2280",
+              "name": "session_data",
+              "value": "={{ $json.session_data }}",
+              "type": "string"
+            },
+            {
+              "id": "79cef232-905c-46cd-974b-ae2d1151a79d",
+              "name": "updated_at",
+              "value": "={{ $json.updated_at }}",
+              "type": "string"
+            },
+            {
+              "id": "60afaf7f-d559-45c5-a5e7-5bbb2c824eb2",
+              "name": "reply",
+              "value": "={{ $json.reply }}",
+              "type": "string"
+            },
+            {
+              "id": "dce527b9-a6ae-4c04-a09f-66d8dfece771",
+              "name": "last_reply",
+              "value": "={{ $json.output || $json.reply || $json.last_reply || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4832,
+        -544
+      ],
+      "id": "e4f0de2b-2a03-4ea6-ba1f-7770dc4c2b37",
+      "name": "SET_New_Session_Update_Payload"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "XmD4lzZUz3lZEMx6",
+          "mode": "list",
+          "cachedResultName": "landoc_customer_sessions",
+          "cachedResultUrl": "/projects/NHMe4GUiYYuTjeZP/datatables/XmD4lzZUz3lZEMx6"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "customer_id",
+              "keyValue": "={{ $json.customer_id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "customer_id": "={{ $json.customer_id }}",
+            "channel": "={{ $json.channel }}",
+            "active_service": "={{ $json.active_service }}",
+            "current_stage": "={{ $json.current_stage }}",
+            "language": "={{ $json.language || '' }}",
+            "session_data": "={{ $json.session_data }}",
+            "updated_at": "= {{ $json.updated_at }}",
+            "last_reply": "={{ $json.reply }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "customer_id",
+              "displayName": "customer_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "active_service",
+              "displayName": "active_service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "current_stage",
+              "displayName": "current_stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "language",
+              "displayName": "language",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "session_data",
+              "displayName": "session_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_reply",
+              "displayName": "last_reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -4608,
+        -544
+      ],
+      "id": "0b00a27c-4d12-4eb9-9633-2a26269c3f18",
+      "name": "DT_Update_New_Customer_Session",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "beb3b912-dc60-4dd7-96a0-a588a47af115",
+              "name": "output",
+              "value": "={{ $json.last_reply || 'Sorry, I could not process your request. Please try again.' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4352,
+        -544
+      ],
+      "id": "1ae3ef37-05ed-4b1b-beb8-1a757898e8d1",
+      "name": "SET_New_Final_Chat_Response"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "nyR1GhlMi0uk54Ll",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/nyR1GhlMi0uk54Ll",
+          "cachedResultName": "SERVICE_MARRIAGE_REGISTRATION_V2_PaymentTest"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -5376,
+        -880
+      ],
+      "id": "d9560285-1cfd-4715-90b2-2d8ca7f94837",
+      "name": "EXEC_Existing_Marriage_Service1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "nyR1GhlMi0uk54Ll",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/nyR1GhlMi0uk54Ll",
+          "cachedResultName": "SERVICE_MARRIAGE_REGISTRATION_V2_PaymentTest"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -5344,
+        -544
+      ],
+      "id": "f1090fc4-a2aa-469d-8778-26f0545431bf",
+      "name": "EXEC_New_Marriage_Service1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst input = item.json || {};\nconst binary = item.binary || {};\n\nconst binaryKeys = Object.keys(binary || {});\nconst firstBinaryKey = binaryKeys[0] || '';\n\nlet attachmentBase64 = '';\nlet attachmentBinaryKey = '';\nlet fileName = '';\nlet fileExtension = '';\nlet mimeType = '';\nlet fileSize = '';\n\nif (firstBinaryKey && binary[firstBinaryKey]) {\n  const file = binary[firstBinaryKey];\n\n  const buffer = await this.helpers.getBinaryDataBuffer(0, firstBinaryKey);\n  attachmentBase64 = buffer.toString('base64');\n\n  attachmentBinaryKey = firstBinaryKey;\n  fileName = file.fileName || file.filename || '';\n  mimeType = file.mimeType || file.mimetype || '';\n  fileSize = file.fileSize || file.file_size || '';\n\n  if (fileName && fileName.includes('.')) {\n    fileExtension = fileName.split('.').pop();\n  }\n}\n\nconst hasAttachment = !!attachmentBase64;\n\nreturn [\n  {\n    json: {\n      ...input,\n\n      attachment_base64: attachmentBase64,\n      attachment_base64_available: hasAttachment,\n\n      has_attachment: hasAttachment,\n      attachment_count: hasAttachment ? 1 : 0,\n\n      attachment_file_name: fileName,\n      attachment_file_extension: fileExtension,\n      attachment_mime_type: mimeType,\n      attachment_file_size: fileSize,\n\n      attachment_binary_key: attachmentBinaryKey,\n      attachment_info: hasAttachment\n        ? `${fileName} | ${mimeType} | ${fileSize}`\n        : ''\n    },\n    binary\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7648,
+        -432
+      ],
+      "id": "c7ca7650-d73f-4ef5-885a-9a3747a5d42c",
+      "name": "CODE_Attachment_To_Base64"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "SET_Normalized_Input": {
+      "main": [
+        [
+          {
+            "node": "DT_Get_Customer_Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI_Classify_New_Service",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SWITCH_Active_Service": {
+      "main": [
+        [
+          {
+            "node": "EXEC_Existing_Marriage_Service1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SET_Active_Service_Context": {
+      "main": [
+        [
+          {
+            "node": "SWITCH_Active_Service",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TRIGGER_Chat": {
+      "main": [
+        [
+          {
+            "node": "CODE_Attachment_To_Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DT_Get_Customer_Session": {
+      "main": [
+        [
+          {
+            "node": "IF_Has_Active_Service",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF_Has_Active_Service": {
+      "main": [
+        [
+          {
+            "node": "SET_Active_Service_Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI_Classify_New_Service",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI_Classify_New_Service": {
+      "main": [
+        [
+          {
+            "node": "CODE_Parse_Service_JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CODE_Parse_Service_JSON": {
+      "main": [
+        [
+          {
+            "node": "SWITCH_New_Service",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SWITCH_New_Service": {
+      "main": [
+        [
+          {
+            "node": "SET_New_Marriage_Service_Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SET_Response_Fallback_Menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SET_New_Marriage_Service_Context": {
+      "main": [
+        [
+          {
+            "node": "EXEC_New_Marriage_Service1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SET_Existing_Service_Result_Normalized": {
+      "main": [
+        [
+          {
+            "node": "SET_Existing_Session_Update_Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SET_Existing_Session_Update_Payload": {
+      "main": [
+        [
+          {
+            "node": "DT_Update_Existing_Customer_Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DT_Update_Existing_Customer_Session": {
+      "main": [
+        [
+          {
+            "node": "SET_Existing_Final_Chat_Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SET_New_Service_Result_Normalized": {
+      "main": [
+        [
+          {
+            "node": "SET_New_Session_Update_Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SET_New_Session_Update_Payload": {
+      "main": [
+        [
+          {
+            "node": "DT_Update_New_Customer_Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DT_Update_New_Customer_Session": {
+      "main": [
+        [
+          {
+            "node": "SET_New_Final_Chat_Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EXEC_Existing_Marriage_Service1": {
+      "main": [
+        [
+          {
+            "node": "SET_Existing_Service_Result_Normalized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EXEC_New_Marriage_Service1": {
+      "main": [
+        [
+          {
+            "node": "SET_New_Service_Result_Normalized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CODE_Attachment_To_Base64": {
+      "main": [
+        [
+          {
+            "node": "SET_Normalized_Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "771ed7fa-dd93-48bd-91ab-136bd3b3b965",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c95ce242022880240fecebcf3875903ebff7490d0c7bb26ab84da960b1a9bfa1"
+  },
+  "id": "iEujgHxpfY8jSfsp",
+  "tags": []
+}

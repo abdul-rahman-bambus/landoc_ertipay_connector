@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Form: SRO -->
+        <record id="res_sro_form_view" model="ir.ui.view">
+            <field name="name">res.sro.form</field>
+            <field name="model">res.sro</field>
+            <field name="arch" type="xml">
+                <form string="Sub Registrar Office">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                            </group>
+                            <group>
+                                <field name="district_id"/>
+                                <field name="zone_id"/>
+                            </group>
+                        </group>
+
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- List: SRO -->
+        <record id="res_sro_list_view" model="ir.ui.view">
+            <field name="name">res.sro.list</field>
+            <field name="model">res.sro</field>
+            <field name="arch" type="xml">
+                <list string="Sub Registrar Office">
+                    <field name="name"/>
+                    <field name="district_id"/>
+                    <field name="zone_id"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Search: SRO -->
+        <record id="res_sro_search_view" model="ir.ui.view">
+            <field name="name">res.sro.search</field>
+            <field name="model">res.sro</field>
+            <field name="arch" type="xml">
+                <search string="SRO">
+                    <field name="name" string="Name"
+                           filter_domain="[('name', 'ilike', self)]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="District" name="district" context="{'group_by':'district_id'}"/>
+                        <filter string="Zone" name="zone" context="{'group_by':'zone_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+
+        <!-- Window: Action -->
+        <record id="res_sro_act_window" model="ir.actions.act_window">
+            <field name="name">Sub Registrar Office</field>
+            <field name="res_model">res.sro</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    There is no examples click here to add new ModelTitle.
+                </p>
+            </field>
+        </record>
+
+        <!-- Menuitem -->
+        <menuitem name="Sub Registrar Office" id="res_sro_menu" parent="master_data_main_menu" groups="custom_landoc.group_landoc_manager"
+                  action="res_sro_act_window" sequence='3'/>
+
+    </data>
+</odoo>

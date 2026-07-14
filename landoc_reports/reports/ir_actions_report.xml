@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_crm_landoc_service_ec" model="ir.actions.report">
+        <field name="name">Encumbrance Certificate Report</field>
+        <field name="model">crm.landoc.service</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">landoc_reports.report_ec_crm_landoc_service</field>
+        <field name="report_file">landoc_reports.report_ec_crm_landoc_service</field>
+    </record>
+
+</odoo>
+

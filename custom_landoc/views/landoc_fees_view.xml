@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Form: Landoc Fees -->
+        <record id="landoc_fees_form_view" model="ir.ui.view">
+            <field name="name">landoc.fees.form</field>
+            <field name="model">landoc.fees</field>
+            <field name="arch" type="xml">
+                <form string="Landoc Fees">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name"/>
+                            <h1>
+                                <field name="name" required="1" placeholder="EC Fees"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="service_category_id"/>
+                            </group>
+                            <group>
+                                <field name="service_id" readonly="service_count == 1"
+                                       invisible="not service_category_id" force_save="1"/>
+                                <field name="is_govt_online_payment_required"/>
+                                <field name="service_count" invisible="1"/>
+                                <field name="is_ec" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Customer Fees">
+                                <!-- EC Customer  -->
+                                <field name="customer_fees_line" invisible="not is_ec">
+                                    <list editable="bottom">
+                                        <field name="product_id" width="200"/>
+                                        <field name="ec_customer_fee_category"/>
+                                        <field name="tax_ids" widget="many2many_tags"/>
+                                        <field name="currency_id" column_invisible="1"/>
+                                        <field name="rate"/>
+                                        <field name="tax_excluded_amount" optional="hide"/>
+                                        <field name="rate_total"/>
+                                    </list>
+                                </field>
+
+                                <!-- Non EC Customer  -->
+                                <field name="customer_fees_line" invisible="is_ec">
+                                    <list editable="bottom">
+                                        <field name="product_id" width="200"/>
+                                        <field name="tax_ids" widget="many2many_tags"/>
+                                        <field name="currency_id" column_invisible="1"/>
+                                        <field name="rate"/>
+                                        <field name="tax_excluded_amount" optional="hide"/>
+                                        <field name="rate_total"/>
+                                    </list>
+                                </field>
+
+                                <div class="float-end d-flex gap-1 mb-2" name="customer_fee_total_lines">
+                                    <group name="note_group" col="6" class="mt-2 mt-md-0">
+                                        <group class="oe_subtotal_footer d-flex order-0 order-lg-1 flex-column gap-0 gap-sm-3"
+                                               colspan="2" name="customer_fee_total">
+                                            <field name="currency_id" invisible="1"/>
+                                            <field name="customer_fee_total" class="fw-bold" nolabel="1" readonly="1"/>
+
+                                        </group>
+                                    </group>
+                                </div>
+                            </page>
+                            <page string="Vendor Fees" invisible="not is_govt_online_payment_required">
+                                <!-- EC Vendor  -->
+                                <field name="vendor_fees_line" invisible="not is_ec">
+                                    <list editable="bottom">
+                                        <field name="product_id" width="200"/>
+                                        <field name="ec_vendor_fee_category"/>
+                                        <field name="tax_ids" widget="many2many_tags"/>
+                                        <field name="currency_id" column_invisible="1"/>
+                                        <field name="rate"/>
+                                        <field name="tax_excluded_amount" optional="hide"/>
+                                        <field name="rate_total"/>
+                                    </list>
+                                </field>
+
+                                <!-- Non EC Vendor  -->
+                                <field name="vendor_fees_line" invisible="is_ec">
+                                    <list editable="bottom">
+                                        <field name="product_id" width="200"/>
+                                        <field name="tax_ids" widget="many2many_tags"/>
+                                        <field name="currency_id" column_invisible="1"/>
+                                        <field name="rate"/>
+                                        <field name="tax_excluded_amount" optional="hide"/>
+                                        <field name="rate_total"/>
+                                    </list>
+                                </field>
+
+                                <div class="float-end d-flex gap-1 mb-2" name="vendor_fee_total_lines">
+                                    <group name="note_group" col="6" class="mt-2 mt-md-0">
+                                        <group class="oe_subtotal_footer d-flex order-0 order-lg-1 flex-column gap-0 gap-sm-3"
+                                               colspan="2" name="vendor_fee_total">
+                                            <field name="currency_id" invisible="1"/>
+                                            <field name="vendor_fee_total" class="fw-bold" nolabel="1" readonly="1"/>
+
+                                        </group>
+                                    </group>
+                                </div>
+                            </page>
+                        </notebook>
+
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- List: Landoc Fees -->
+        <record id="landoc_fees_list_view" model="ir.ui.view">
+            <field name="name">landoc.fees.list</field>
+            <field name="model">landoc.fees</field>
+            <field name="arch" type="xml">
+                <list string="Landoc Fees">
+                    <field name="name"/>
+                    <field name="service_category_id"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Search: Landoc Fees -->
+        <record id="landoc_fees_search_view" model="ir.ui.view">
+            <field name="name">landoc.fees.search</field>
+            <field name="model">landoc.fees</field>
+            <field name="arch" type="xml">
+                <search string="Fees">
+                    <field name="name" string="Name"
+                           filter_domain="[('name', 'ilike', self)]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Category" name="category" context="{'group_by':'service_category_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+
+        <!-- Window: Action -->
+        <record id="landoc_fees_act_window" model="ir.actions.act_window">
+            <field name="name">Landoc Fees</field>
+            <field name="res_model">landoc.fees</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="landoc_fees_search_view"/>
+            <field name="context">{'search_default_category': 1}</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    There is no examples click here to add new ModelTitle.
+                </p>
+            </field>
+        </record>
+
+        <!-- Menuitem -->
+        <menuitem name="Landoc Fees" id="landoc_fees_menu" parent="master_data_main_menu"
+                  groups="custom_landoc.group_landoc_manager"
+                  action="landoc_fees_act_window"/>
+
+    </data>
+</odoo>

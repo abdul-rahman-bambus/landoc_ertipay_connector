@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <odoo>
+            <record id="landoc_webhook_api_token" model="ir.config_parameter">
+                <field name="key">landoc_n8n_webhook.api_token</field>
+                <field name="value">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIiwiaWF0IjoxNTE2MjM5MDIyfQ.hyOiJIUzI1NiIurHjyrfnK</field>
+            </record>
+        </odoo>
+
+
+    </data>
+</odoo>
+

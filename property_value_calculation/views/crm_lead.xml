@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="custom_crm_form_inherit" model="ir.ui.view">
+            <field name="name">property_value_calculation.custom_crm.form</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="custom_crm.crm_lead_view_form_inherit"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='checklist_tracking']" position="after">
+                    <page string="Guideline Calculation" groups="custom_landoc.group_landoc_manager,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user" invisible="not is_document_registation or type != 'opportunity'">
+                        <group>
+                            <group string="CALCULATE BUILDING VALUE">
+                                <label for="land_area"/>
+                                <div name="land_area_unit">
+                                    <field name="land_area" class="oe_inline"/>
+                                    <span name="land_unit_span">
+                                        per
+                                        <field name="land_unit" class="oe_inline" style="max-width:130px"/>
+                                    </span>
+                                </div>
+                                <label for="land_rate"/>
+                                <div name="land_rate_unit">
+                                    <field name="land_rate" class="oe_inline"/>
+                                    <span name="land_rate_span">
+                                        per
+                                        <field name="land_unit" readonly="1" class="oe_inline" style="max-width:130px"/>
+                                    </span>
+                                </div>
+
+                                <field name="estimated_property_value"/>
+                            </group>
+                            <group string="General">
+                                <field name="government_link" widget="url" invisible="1"/>
+                                <button name="action_open_government_link"
+                                        type="object"
+                                        string="Visit Website"
+                                        icon="fa-external-link"
+                                        invisible="not government_link"/>
+                                <div></div>
+                                <field name="is_stamp_percentage" string="Is Percentage" invisible="1"/>
+                                <label for="stamp_duty"/>
+                                <div name="stamp_duty_unit">
+                                    <field name="stamp_duty" style="max-width:130px" class="oe_inline"/>
+                                    <span name="stamp_duty_unit_span" invisible="not is_stamp_percentage">
+                                        <strong>%</strong>
+                                    </span>
+                                </div>
+
+                                <field name="is_registration_fee_percentage" string="Is Percentage" invisible="1"/>
+                                <label for="registration_fee"/>
+                                <div name="registration_fee_unit">
+                                    <field name="registration_fee" style="max-width:130px" class="oe_inline"/>
+                                    <span name="registration_fee_unit_span"
+                                          invisible="not is_registration_fee_percentage">
+                                        <strong>%</strong>
+                                    </span>
+                                </div>
+                                <field name="total_guideline_value"/>
+
+                            </group>
+                            <group></group>
+                            <field name="building_calculation_pdf" widget="pdf_viewer"/>
+                        </group>
+
+                    </page>
+
+                    <page string="PWD Info." groups="custom_landoc.group_landoc_manager,custom_landoc.group_landoc_legal_user,custom_landoc.group_landoc_legal_team_lead_user,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user,custom_landoc.group_landoc_marketing_user,custom_landoc.group_landoc_marketing_team_lead_user,custom_landoc.group_landoc_internal_user,custom_landoc.group_landoc_internal_team_lead_user,custom_landoc.group_landoc_external_user,custom_landoc.group_landoc_external_team_lead_user" invisible="not is_propertychecklist_needed or type != 'opportunity'">
+                        <group string="">
+                            <group>
+                                <field name="pwd_building_type" readonly="service_process_total"/>
+                            </group>
+                            <group>
+                                <field name="pwd_building_age" placeholder="Maximum 60 Years" readonly="service_process_total"/>
+                            </group>
+                            <group/>
+                            <field name="pwd_floor_line" readonly="service_process_total">
+                                <list editable="bottom">
+                                    <field name="sequence" string="Sr.No." width="50" force_save="1" readonly="1"/>
+                                    <field name="floor_name"/>
+                                    <field name="area_sqft"/>
+                                    <field name="material_type"/>
+                                    <field name="wood_type"/>
+                                    <field name="roof_type"/>
+                                </list>
+                            </field>
+                        </group>
+                        <group string="Floor Type">
+                            <group>
+                                <field name="pwd_floor_type" readonly="service_process_total"/>
+                            </group>
+                            <group></group>
+                            <group>
+                                <field name="pwd_mosaic_color" invisible="not pwd_floor_type" readonly="service_process_total"/>
+                                <field name="pwd_mosaic_color_text" readonly="service_process_total" string=" "
+                                       invisible="not pwd_floor_type or not pwd_mosaic_color"/>
+                                <field name="pwd_cuddapah_shahabad_slab" readonly="service_process_total" invisible="not pwd_floor_type"/>
+                                <field name="pwd_cuddapah_shahabad_slab_text" readonly="service_process_total" string=" "
+                                       invisible="not pwd_floor_type or not pwd_cuddapah_shahabad_slab"/>
+                                <field name="pwd_ceramic_tiles" readonly="service_process_total" invisible="not pwd_floor_type"/>
+                                <field name="pwd_ceramic_tiles_text" readonly="service_process_total" string=" "
+                                       invisible="not pwd_floor_type or not pwd_ceramic_tiles"/>
+                                <field name="pwd_marble_slabs_1_20_above" readonly="service_process_total" invisible="not pwd_floor_type"/>
+                                <field name="pwd_marble_slabs_1_20_above_text" readonly="service_process_total" string=" "
+                                       invisible="not pwd_floor_type or not pwd_marble_slabs_1_20_above"/>
+                                <field name="pwd_marble_slabs_1_20_below" readonly="service_process_total" invisible="not pwd_floor_type"/>
+                                <field name="pwd_marble_slabs_1_20_below_text" readonly="service_process_total" string=" "
+                                       invisible="not pwd_floor_type or not pwd_marble_slabs_1_20_below"/>
+                                <field name="pwd_dadooing_with_vitrified_tiles" readonly="service_process_total" invisible="not pwd_floor_type"/>
+                                <field name="pwd_dadooing_with_vitrified_tiles_text" readonly="service_process_total" string=" "
+                                       invisible="not pwd_floor_type or not pwd_dadooing_with_vitrified_tiles"/>
+                                <field name="pwd_cement_floor" readonly="service_process_total" invisible="not pwd_floor_type"/>
+                                <field name="pwd_cement_floor_text" readonly="service_process_total" string=" "
+                                       invisible="not pwd_floor_type or not pwd_cement_floor"/>
+
+                            </group>
+                            <group>
+                                <field name="pwd_granite_slabs" readonly="service_process_total" invisible="not pwd_floor_type"/>
+                                <field name="pwd_granite_slabs_text" readonly="service_process_total" string=" "
+                                       invisible="not pwd_floor_type or not pwd_granite_slabs"/>
+                                <field name="pwd_vitrified_tiles" readonly="service_process_total" invisible="not pwd_floor_type"/>
+                                <field name="pwd_vitrified_tiles_text" readonly="service_process_total" string=" "
+                                       invisible="not pwd_floor_type or not pwd_vitrified_tiles"/>
+                                <field name="pwd_marble_tiles" readonly="service_process_total" invisible="not pwd_floor_type"/>
+                                <field name="pwd_marble_tiles_text" readonly="service_process_total" string=" "
+                                       invisible="not pwd_floor_type or not pwd_marble_tiles"/>
+                                <field name="pwd_mosaic_gray_color" readonly="service_process_total" invisible="not pwd_floor_type"/>
+                                <field name="pwd_mosaic_gray_color_text" readonly="service_process_total" string=" "
+                                       invisible="not pwd_floor_type or not pwd_mosaic_gray_color"/>
+                                <field name="pwd_dadooing_with_mosaic" readonly="service_process_total" invisible="not pwd_floor_type"/>
+                                <field name="pwd_dadooing_with_mosaic_text" readonly="service_process_total" string=" "
+                                       invisible="not pwd_floor_type or not pwd_dadooing_with_mosaic"/>
+                                <field name="pwd_dadooing_with_ceramic_glazed_tiles" readonly="service_process_total" invisible="not pwd_floor_type"/>
+                                <field name="pwd_dadooing_with_ceramic_glazed_tiles_text" readonly="service_process_total" string=" "
+                                       invisible="not pwd_floor_type or not pwd_dadooing_with_ceramic_glazed_tiles"/>
+                            </group>
+                        </group>
+                        <group string="Building Amenities">
+                            <group>
+                                <field name="electrical_installations" readonly="service_process_total"/>
+                                <field name="electrical_installations_type" readonly="service_process_total" string=" " widget="radio" options="{'horizontal': true}" invisible="not electrical_installations"/>
+                                <field name="water_amenities" readonly="service_process_total"/>
+                                <field name="municipality_water_tap_connection" readonly="service_process_total" invisible="not water_amenities"/>
+                                <field name="water_number" readonly="service_process_total" invisible="not water_amenities"/>
+
+                                <field name="air_condition" readonly="service_process_total"/>
+                                <field name="gate" readonly="service_process_total"/>
+                                <field name="latrine" readonly="service_process_total"/>
+                                <field name="other_sanitary_item" readonly="service_process_total"/>
+                                <field name="over_head_tank" readonly="service_process_total"/>
+                                <field name="miscellaneous_item" readonly="service_process_total"/>
+                            </group>
+                            <group>
+                                <field name="internal_water_supply" readonly="service_process_total"/>
+                                <field name="internal_water_supply_type" readonly="service_process_total" widget="radio" options="{'horizontal': true}" invisible="not internal_water_supply"/>
+                                <field name="sanitary_installation" readonly="service_process_total"/>
+                                <field name="sanitary_installation_type" string=" " readonly="service_process_total" widget="radio" options="{'horizontal': true}" invisible="not sanitary_installation"/>
+
+                                <field name="electrical_motor" readonly="service_process_total"/>
+                                <field name="inspection_chamber" readonly="service_process_total"/>
+                                <field name="open_well" readonly="service_process_total"/>
+                                <field name="pipeline" readonly="service_process_total"/>
+                                <field name="lift" readonly="service_process_total"/>
+                                <field name="car_parking" readonly="service_process_total"/>
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

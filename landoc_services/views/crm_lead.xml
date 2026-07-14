@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="landoc_services_custom_crm_form_inherit" model="ir.ui.view">
+            <field name="name">landoc.services.custom_crm.form</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/div[@name='button_box']" position="inside">
+                    <button name="action_view_process_services"
+                            type="object"
+                            class="oe_stat_button"
+                            invisible="type != 'opportunity' or not service_process_total"
+                            icon="fa-solid fa-book">
+                        <field name="service_process_total" widget="statinfo" string="Services"/>
+                    </button>
+                </xpath>
+                <xpath expr="//field[@name='stage_id']" position="before">
+                    <button name="action_create_landoc_services" class="oe_highlight" groups="custom_landoc.group_landoc_manager,custom_landoc.group_landoc_legal_user,custom_landoc.group_landoc_legal_team_lead_user" type="object" string="Proceed to Service" title="Proceed to Service" invisible="type != 'opportunity' or not visibility_proceed_service or service_process_total or not is_ec or not is_document_registation" />
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

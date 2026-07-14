@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="voice_trans_lang_view_form" model="ir.ui.view">
+            <field name="name">Voice Translation Language</field>
+            <field name="model">res.trans.lang</field>
+            <field name="arch" type="xml">
+                <form string="Voice Translation Language">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                        </group>
+                        <group/>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="voice_trans_lang_view_tree" model="ir.ui.view">
+            <field name="name">Voice Translation Language</field>
+            <field name="model">res.trans.lang</field>
+            <field name="arch" type="xml">
+                <list string="Voice Translation Language">
+                    <field name="name"/>
+                    <field name="code"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="voice_trans_lang_action" model="ir.actions.act_window">
+            <field name="name">Voice Translation Language</field>
+            <field name="res_model">res.trans.lang</field>
+            <field name="view_mode">list,form</field>
+            <field name="view_id" ref="voice_trans_lang_view_tree"/>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                Create a Language
+              </p>
+            </field>
+        </record>
+        
+        <menuitem id="res_translation_language_menu" name="Voice Translation Language" parent="base.menu_translation" action="voice_trans_lang_action" sequence="2"/>
+
+    </data>
+</odoo>

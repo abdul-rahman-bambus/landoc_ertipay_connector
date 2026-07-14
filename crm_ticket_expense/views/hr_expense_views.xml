@@ -1,0 +1,34 @@
+<odoo>
+    <record id="crm_ticket_expense_hr_expense_form_inherit" model="ir.ui.view">
+        <field name="name">hr.expense.form.crm.lead</field>
+        <field name="model">hr.expense</field>
+        <field name="inherit_id" ref="hr_expense.hr_expense_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- New button for automate other button clicks  -->
+            <xpath expr="//button[@name='action_submit_expenses']" position="after">
+                <button name="action_validate_expenses" string="Submit Expenses" type="object"
+                        invisible="state != 'draft' or sheet_id" class="oe_highlight o_expense_submit" data-hotkey="v"/>
+            </xpath>
+
+            <!-- Invisible Buttons to avoid confusions    -->
+            <xpath expr="//button[@name='action_submit_expenses'][1]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_submit_expenses'][2]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_split_wizard']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//widget[@name='attach_document'][1]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//widget[@name='attach_document'][2]" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+
+        </field>
+    </record>
+</odoo>

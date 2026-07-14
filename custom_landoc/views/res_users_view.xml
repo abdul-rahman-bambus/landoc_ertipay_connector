@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_users_form_force_simple" model="ir.ui.view">
+        <field name="name">res.users.form.force.simple</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+        <field name="priority">99</field>
+    </record>
+
+    <!--Inheriting fields to res.users and ir.ui.menu-->
+    <record id="view_users_form_inherit" model="ir.ui.view">
+        <field name="name">res.users.view.form.inherit.hide.menu.user</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='access_rights']/group[1]" position="before">
+                <group string="Departments">
+                    <field string="Allowed Departments" name="allowed_department_ids" widget="many2many_tags"
+                           options="{'no_create': True}"/>
+                    <field string="Default Department" name="default_department_id" options="{'no_create': True}"/>
+                </group>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Hide Specific Menu" invisible="is_admin or is_show_specific_menu">
+                    <list>
+                        <field name="hide_menu_ids"/>
+                    </list>
+                </page>
+            </xpath>
+            <field name="name" position="after">
+                <field name="is_admin" invisible="1"/>
+            </field>
+        </field>
+    </record>
+    <!--Inherited view of the model ir.ui.menu-->
+    <record id="edit_menu_access" model="ir.ui.view">
+        <field name="name">ir.ui.menu.view.form.inherit.hide.menu.user</field>
+        <field name="model">ir.ui.menu</field>
+        <field name="inherit_id" ref="base.edit_menu_access"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Restrict users" name="restrict_users">
+                    <list>
+                        <field name="restrict_user_ids"/>
+                    </list>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

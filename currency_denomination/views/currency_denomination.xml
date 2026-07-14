@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Form: Currency Denomination -->
+        <record id="currency_denomination_form_view" model="ir.ui.view">
+            <field name="name">currency.denomination.form</field>
+            <field name="model">currency.denomination</field>
+            <field name="arch" type="xml">
+                <form string="Currency Denomination">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="date"/>
+                            </group>
+                            <group>
+                                <field name="user_id" options="{'no_create': True}" widget="many2one_avatar_user"/>
+                                <field name="company_id" options="{'no_create': True}"/>
+                                <field name="currency_id" options="{'no_create': True}" invisible="1"/>
+                            </group>
+                        </group>
+                        <group string="Opening &amp; Closing Cash">
+                            <group>
+                                <field name="total_opening_cash" string="Opening Cash" />
+                            </group>
+                            <group>
+                                <field name="total_closing_cash" string="Closing Cash"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Opening Cash">
+                                <field name="opening_cash_ids">
+                                    <list editable="bottom" create="0" delete="0">
+                                        <field name="cash_denomination" force_save="1"/>
+                                        <field name="count"/>
+                                        <field name="currency_id" options="{'no_create': True}" column_invisible="1"/>
+                                        <field name="total"/>
+                                    </list>
+                                </field>
+
+                                <group class="oe_subtotal_footer oe_right" >
+                                    <label class="fw-bold" for="total_opening_cash" />
+                                        <field name="total_opening_cash" nolabel="1"/>
+
+                                </group>
+
+                            </page>
+                            <page string="Closing Cash">
+                                <field name="closing_cash_ids">
+                                    <list editable="bottom" create="0" delete="0">
+                                        <field name="cash_denomination" force_save="1"/>
+                                        <field name="count"/>
+                                        <field name="currency_id" options="{'no_create': True}" column_invisible="1"/>
+                                        <field name="total"/>
+                                    </list>
+                                </field>
+
+                                <group class="oe_subtotal_footer oe_right" >
+                                    <label class="fw-bold" for="total_closing_cash" />
+                                        <field name="total_closing_cash" nolabel="1"/>
+
+                                </group>
+                            </page>
+                        </notebook>
+
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- list: Currency Denomination -->
+        <record id="currency_denomination_list_view" model="ir.ui.view">
+            <field name="name">currency.denomination.list</field>
+            <field name="model">currency.denomination</field>
+            <field name="arch" type="xml">
+                <list string="Currency Denomination">
+                    <field name="date"/>
+                    <field name="user_id" widget="many2one_avatar_user"/>
+                    <field name="currency_id" column_invisible="1"/>
+                    <field name="total_opening_cash"/>
+                    <field name="total_closing_cash"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Search: Currency Denomination -->
+        <record id="currency_denomination_view_search" model="ir.ui.view">
+            <field name="name">currency.denomination.view.search</field>
+            <field name="model">currency.denomination</field>
+            <field name="arch" type="xml">
+                <search string="Currency Denomination">
+                    <group expand="0" string="Group By">
+                        <filter string="Date" name="date" context="{'group_by':'date:month'}"/>
+                        <filter string="User" name="user" context="{'group_by': 'user_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+
+        <!-- Window: Action -->
+        <record id="currency_denomination_act_window" model="ir.actions.act_window">
+            <field name="name">Currency Denomination</field>
+            <field name="res_model">currency.denomination</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    There is no examples click here to add new ModelTitle.
+                </p>
+            </field>
+        </record>
+
+        <!-- MenuItem -->
+        <menuitem id="currency_denomination_main_menu" name="Currency Denomination"
+                  parent="account.menu_finance_receivables" action="currency_denomination_act_window" sequence="220"/>
+
+    </data>
+</odoo>
+

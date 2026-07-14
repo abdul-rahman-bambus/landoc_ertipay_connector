@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_crm_landoc_service_tree" model="ir.ui.view">
+        <field name="name">crm.landoc.service.list</field>
+        <field name="model">crm.landoc.service</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_crm_landoc_service_form" model="ir.ui.view">
+        <field name="name">crm.landoc.service.form</field>
+        <field name="model">crm.landoc.service</field>
+        <field name="arch" type="xml">
+            <form string="City" create="0">
+                <header>
+                    <button name="action_set_to_confirm" string="Confirm" type="object" groups="custom_landoc.group_landoc_manager,custom_landoc.group_landoc_legal_user,custom_landoc.group_landoc_legal_team_lead_user,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user" invisible="state == 'confirmed'"/>
+                    <button name="action_set_to_draft" string="Set to Draft" type="object" groups="custom_landoc.group_landoc_manager,custom_landoc.group_landoc_legal_user,custom_landoc.group_landoc_legal_team_lead_user,custom_landoc.group_landoc_user,custom_landoc.group_landoc_crm_team_lead_user" invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar" />
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" required="1" readonly="1" placeholder="EC Service"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="service_category_id" readonly="1" required="1"/>
+                            <field name="is_propertychecklist_needed" invisible="1"/>
+                            <field name="property_type_id" required="is_propertychecklist_needed" readonly="1"
+                                   invisible="not is_propertychecklist_needed"/>
+                            <field name="workflow_master_id" readonly="1" required="1"/>
+                        </group>
+                        <group>
+                            <field name="service_count" invisible="1"/>
+                            <field name="is_ec" invisible="1"/>
+                            <field name="service_id" force_save="1" required="1"
+                                   readonly="1" invisible="service_count == 1"/>
+                            <field name="lead_id" readonly="1" required="1"/>
+                        </group>
+                    </group>
+                    <group string="Registrar Information" col="3">
+                        <group>
+                            <field name="zone_id" placeholder="Select Zone" readonly="1" required="1"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="district_id" placeholder="Select DRO" required="1"
+                                   domain="[('zone_id', '=', zone_id)]" readonly="1"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="sro_id" placeholder="Select SRO" readonly="1" required="1"
+                                   domain="[('district_id', '=', district_id)]"
+                                   options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                    <group/>
+                    <notebook>
+
+                        <!-- EC Process  -->
+                        <page string="Encumbrance Certificate" invisible="not is_ec">
+                            <group>
+                                <group>
+                                    <field name="ec_start_date" required="is_ec" force_save="1" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="ec_end_date" required="is_ec" force_save="1" readonly="1"/>
+                                    <field name="ec_end_date_warning" string=" " class="text-danger"
+                                           invisible="not ec_end_date_warning" readonly="1"/>
+                                </group>
+                            </group>
+                            <notebook>
+                                <page string="Survey Details">
+                                    <group>
+                                        <group>
+                                            <field name="ec_village_id" placeholder="Select Village"
+                                                   domain="[('sro_id', '=', sro_id)]"
+                                                   readonly="state == 'confirmed'"
+                                                   required="not survey_details_line and is_ec"
+                                                   options="{'no_create': True}"/>
+                                            <field name="sub_division_no" readonly="state == 'confirmed'"/>
+                                        </group>
+                                        <group>
+                                            <field name="survey_no" required="not survey_details_line and is_ec" readonly="state == 'confirmed'"/>
+                                            <button name="action_survey_details" class="oe_highlight" type="object" invisible="state == 'confirmed'"
+                                                    string="Add"/>
+                                        </group>
+                                        <group/>
+                                    </group>
+                                    <group invisible="not survey_details_line">
+                                        <group string="Report">
+                                            <field name="survey_details_line" readonly="state == 'confirmed'" nolabel="1">
+                                                <list create="0" edit="0">
+                                                    <field name="ec_village_id"/>
+                                                    <field name="survey_no"/>
+                                                    <field name="sub_division_no"/>
+                                                </list>
+                                            </field>
+                                        </group>
+                                        <group></group>
+                                    </group>
+                                </page>
+                                <page string="Plot Details">
+                                    <group>
+                                        <group>
+                                            <field name="ec_plot_no" readonly="state == 'confirmed'"/>
+                                        </group>
+                                        <group>
+                                            <button name="action_plot_details" class="oe_highlight" type="object" invisible="state == 'confirmed'"
+                                                    string="Add"/>
+                                        </group>
+                                    </group>
+                                    <group/>
+                                    <group invisible="not plot_details_line">
+                                        <group string="Report">
+                                            <field name="plot_details_line" readonly="state == 'confirmed'" nolabel="1">
+                                                <list create="0" edit="0">
+                                                    <field name="ec_plot_no"/>
+                                                </list>
+                                            </field>
+                                        </group>
+                                        <group></group>
+                                    </group>
+                                </page>
+                                <page string="Flat Details">
+                                    <group>
+                                        <group>
+                                            <field name="ec_flat_no" readonly="state == 'confirmed'"/>
+                                        </group>
+                                        <group>
+                                            <button name="action_flat_details" class="oe_highlight" type="object" invisible="state == 'confirmed'"
+                                                    string="Add"/>
+                                        </group>
+                                    </group>
+                                    <group/>
+                                    <group invisible="not flat_details_line">
+
+                                        <group string="Report">
+                                            <field name="flat_details_line" readonly="state == 'confirmed'" nolabel="1">
+                                                <list create="0" edit="0">
+                                                    <field name="ec_flat_no"/>
+                                                </list>
+                                            </field>
+                                        </group>
+                                        <group></group>
+                                    </group>
+                                </page>
+                                <page string="House Details">
+                                    <group>
+                                        <group>
+                                            <field name="ec_door_no" readonly="state == 'confirmed'"/>
+                                            <field name="ec_block_no" readonly="state == 'confirmed'"/>
+                                        </group>
+                                        <group>
+                                            <field name="ec_ward_no" readonly="state == 'confirmed'"/>
+                                            <button name="action_house_details" class="oe_highlight" type="object" invisible="state == 'confirmed'"
+                                                    string="Add"/>
+                                        </group>
+                                    </group>
+                                    <group/>
+                                    <group invisible="not house_details_line">
+
+                                        <group string="Report">
+                                            <field name="house_details_line" readonly="state == 'confirmed'" nolabel="1">
+                                                <list create="0" edit="0">
+                                                    <field name="ec_door_no"/>
+                                                    <field name="ec_block_no"/>
+                                                    <field name="ec_ward_no"/>
+                                                </list>
+                                            </field>
+                                        </group>
+                                        <group></group>
+                                    </group>
+                                </page>
+
+                                <page string="Boundary Details">
+                                    <group>
+                                        <group>
+                                            <field name="ec_east" readonly="state == 'confirmed'"/>
+                                            <field name="ec_west" readonly="state == 'confirmed'"/>
+                                        </group>
+                                        <group>
+                                            <field name="ec_north" readonly="state == 'confirmed'"/>
+                                            <field name="ec_south" readonly="state == 'confirmed'"/>
+                                            <button name="action_boundary_details" class="oe_highlight" type="object" invisible="state == 'confirmed'"
+                                                    string="Add"/>
+                                        </group>
+                                    </group>
+                                    <group/>
+                                    <group invisible="not boundary_details_line">
+
+                                        <group string="Report">
+                                            <field name="boundary_details_line" readonly="state == 'confirmed'" nolabel="1">
+                                                <list create="0" edit="0">
+                                                    <field name="ec_east"/>
+                                                    <field name="ec_west"/>
+                                                    <field name="ec_north"/>
+                                                    <field name="ec_south"/>
+                                                </list>
+                                            </field>
+                                        </group>
+                                        <group></group>
+                                    </group>
+                                </page>
+
+                                <page string="Extent and Build-up Area">
+                                    <group>
+                                        <group>
+                                            <label for="total_extent"/>
+                                            <div name="total_extent_unit">
+                                                <span>
+                                                    <field name="total_extent" style="max-width:190px" readonly="state == 'confirmed'"
+                                                           class="oe_inline"/>
+                                                    <field name="extent_sqft_or_area" style="margin-left:5px;" class="oe_inline"/>
+                                                </span>
+                                            </div>
+
+                                            <label for="undivided_share"/>
+                                            <div name="undivided_share_unit">
+                                                <span>
+                                                    <field name="undivided_share" style="max-width:190px" readonly="state == 'confirmed'"
+                                                           class="oe_inline"/>
+                                                    <field name="extent_sqft_or_area" style="margin-left:5px;" class="oe_inline"/>
+                                                </span>
+                                            </div>
+                                        </group>
+                                        <group>
+                                            <label for="conveyed_extent"/>
+                                            <div name="conveyed_extent_unit">
+                                                <span>
+                                                    <field name="conveyed_extent" style="max-width:190px" readonly="state == 'confirmed'"
+                                                           class="oe_inline"/>
+                                                    <field name="extent_sqft_or_area" style="margin-left:5px;" class="oe_inline"/>
+                                                </span>
+                                            </div>
+                                            <label for="build_up_area"/>
+                                            <div name="build_up_area_unit">
+                                                <span>
+                                                    <field name="build_up_area" style="max-width:190px" readonly="state == 'confirmed'"
+                                                           class="oe_inline"/>
+                                                    <field name="extent_sqft_or_area" style="margin-left:5px;" class="oe_inline"/>
+                                                </span>
+                                            </div>
+                                        </group>
+                                    </group>
+                                </page>
+                                <page string="Additional Details">
+                                    <group>
+                                        <group>
+                                            <field name="old_survey_or_sub_div_no" readonly="state == 'confirmed'"/>
+                                            <field name="t_s_no" readonly="state == 'confirmed'"/>
+                                            <field name="father_name" readonly="state == 'confirmed'"/>
+                                            <field name="any_registered_document_no" readonly="state == 'confirmed'"/>
+                                        </group>
+                                        <group>
+                                            <field name="old_door_no" readonly="state == 'confirmed'"/>
+                                            <field name="name_of_declared_owner" readonly="state == 'confirmed'"/>
+                                            <field name="any_other_relevant_info" readonly="state == 'confirmed'"/>
+                                        </group>
+                                    </group>
+                                </page>
+                            </notebook>
+                        </page>
+
+                        <!--  PWD Info.  -->
+                        <page string="PWD Info." invisible="not is_propertychecklist_needed">
+                            <group string="">
+                                <group>
+                                    <field name="pwd_building_type" readonly="state == 'confirmed'"/>
+                                </group>
+                                <group>
+                                    <field name="pwd_building_age" placeholder="Maximum 60 Years" readonly="state == 'confirmed'"/>
+                                </group>
+                                <group/>
+                                <field name="pwd_floor_line" readonly="state == 'confirmed'">
+                                    <list editable="bottom">
+                                        <field name="sequence" string="Sr.No." width="50" force_save="1" readonly="1"/>
+                                        <field name="floor_name"/>
+                                        <field name="area_sqft"/>
+                                        <field name="material_type"/>
+                                        <field name="wood_type"/>
+                                        <field name="roof_type"/>
+                                    </list>
+                                </field>
+                            </group>
+                            <group string="Floor Type">
+                                <group>
+                                    <field name="pwd_floor_type" readonly="state == 'confirmed'"/>
+                                </group>
+                                <group></group>
+                                <group>
+                                    <field name="pwd_mosaic_color" invisible="not pwd_floor_type" readonly="state == 'confirmed'"/>
+                                    <field name="pwd_mosaic_color_text" string=" " readonly="state == 'confirmed'"
+                                           invisible="not pwd_floor_type or not pwd_mosaic_color"/>
+                                    <field name="pwd_cuddapah_shahabad_slab" invisible="not pwd_floor_type" readonly="state == 'confirmed'"/>
+                                    <field name="pwd_cuddapah_shahabad_slab_text" string=" " readonly="state == 'confirmed'"
+                                           invisible="not pwd_floor_type or not pwd_cuddapah_shahabad_slab"/>
+                                    <field name="pwd_ceramic_tiles" invisible="not pwd_floor_type" readonly="state == 'confirmed'"/>
+                                    <field name="pwd_ceramic_tiles_text" string=" " readonly="state == 'confirmed'"
+                                           invisible="not pwd_floor_type or not pwd_ceramic_tiles"/>
+                                    <field name="pwd_marble_slabs_1_20_above" invisible="not pwd_floor_type" readonly="state == 'confirmed'"/>
+                                    <field name="pwd_marble_slabs_1_20_above_text" string=" " readonly="state == 'confirmed'"
+                                           invisible="not pwd_floor_type or not pwd_marble_slabs_1_20_above"/>
+                                    <field name="pwd_marble_slabs_1_20_below" invisible="not pwd_floor_type" readonly="state == 'confirmed'"/>
+                                    <field name="pwd_marble_slabs_1_20_below_text" string=" " readonly="state == 'confirmed'"
+                                           invisible="not pwd_floor_type or not pwd_marble_slabs_1_20_below"/>
+                                    <field name="pwd_dadooing_with_vitrified_tiles" invisible="not pwd_floor_type" readonly="state == 'confirmed'"/>
+                                    <field name="pwd_dadooing_with_vitrified_tiles_text" string=" " readonly="state == 'confirmed'"
+                                           invisible="not pwd_floor_type or not pwd_dadooing_with_vitrified_tiles"/>
+                                    <field name="pwd_cement_floor" invisible="not pwd_floor_type" readonly="state == 'confirmed'"/>
+                                    <field name="pwd_cement_floor_text" string=" " readonly="state == 'confirmed'"
+                                           invisible="not pwd_floor_type or not pwd_cement_floor"/>
+
+                                </group>
+                                <group>
+                                    <field name="pwd_granite_slabs" invisible="not pwd_floor_type" readonly="state == 'confirmed'"/>
+                                    <field name="pwd_granite_slabs_text" string=" " readonly="state == 'confirmed'"
+                                           invisible="not pwd_floor_type or not pwd_granite_slabs"/>
+                                    <field name="pwd_vitrified_tiles" invisible="not pwd_floor_type" readonly="state == 'confirmed'"/>
+                                    <field name="pwd_vitrified_tiles_text" string=" " readonly="state == 'confirmed'"
+                                           invisible="not pwd_floor_type or not pwd_vitrified_tiles"/>
+                                    <field name="pwd_marble_tiles" invisible="not pwd_floor_type" readonly="state == 'confirmed'"/>
+                                    <field name="pwd_marble_tiles_text" string=" " readonly="state == 'confirmed'"
+                                           invisible="not pwd_floor_type or not pwd_marble_tiles"/>
+                                    <field name="pwd_mosaic_gray_color" invisible="not pwd_floor_type" readonly="state == 'confirmed'"/>
+                                    <field name="pwd_mosaic_gray_color_text" readonly="state == 'confirmed'"
+                                           invisible="not pwd_floor_type or not pwd_mosaic_gray_color"/>
+                                    <field name="pwd_dadooing_with_mosaic" invisible="not pwd_floor_type" readonly="state == 'confirmed'"/>
+                                    <field name="pwd_dadooing_with_mosaic_text" string=" " readonly="state == 'confirmed'"
+                                           invisible="not pwd_floor_type or not pwd_dadooing_with_mosaic"/>
+                                    <field name="pwd_dadooing_with_ceramic_glazed_tiles" readonly="state == 'confirmed'"
+                                           invisible="not pwd_floor_type"/>
+                                    <field name="pwd_dadooing_with_ceramic_glazed_tiles_text" string=" " readonly="state == 'confirmed'"
+                                           invisible="not pwd_floor_type or not pwd_dadooing_with_ceramic_glazed_tiles"/>
+                                </group>
+                            </group>
+                            <group string="Building Amenities">
+                                <group>
+                                    <field name="electrical_installations" readonly="state == 'confirmed'"/>
+                                    <field name="electrical_installations_type" widget="radio" string=" " readonly="state == 'confirmed'"
+                                           options="{'horizontal': true}" invisible="not electrical_installations"/>
+                                    <field name="water_amenities" readonly="state == 'confirmed'"/>
+                                    <field name="municipality_water_tap_connection" readonly="state == 'confirmed'" invisible="not water_amenities"/>
+                                    <field name="water_number" invisible="not water_amenities" readonly="state == 'confirmed'"/>
+
+                                    <field name="air_condition" readonly="state == 'confirmed'"/>
+                                    <field name="gate" readonly="state == 'confirmed'"/>
+                                    <field name="latrine" readonly="state == 'confirmed'"/>
+                                    <field name="other_sanitary_item" readonly="state == 'confirmed'"/>
+                                    <field name="over_head_tank" readonly="state == 'confirmed'"/>
+                                    <field name="miscellaneous_item" readonly="state == 'confirmed'"/>
+                                </group>
+                                <group>
+                                    <field name="internal_water_supply" readonly="state == 'confirmed'"/>
+                                    <field name="internal_water_supply_type" widget="radio" readonly="state == 'confirmed'"
+                                           options="{'horizontal': true}" invisible="not internal_water_supply"/>
+                                    <field name="sanitary_installation" readonly="state == 'confirmed'"/>
+                                    <field name="sanitary_installation_type" string=" " widget="radio" readonly="state == 'confirmed'"
+                                           options="{'horizontal': true}" invisible="not sanitary_installation"/>
+
+                                    <field name="electrical_motor" readonly="state == 'confirmed'"/>
+                                    <field name="inspection_chamber" readonly="state == 'confirmed'"/>
+                                    <field name="open_well" readonly="state == 'confirmed'"/>
+                                    <field name="pipeline" readonly="state == 'confirmed'"/>
+                                    <field name="lift" readonly="state == 'confirmed'"/>
+                                    <field name="car_parking" readonly="state == 'confirmed'"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="action_crm_landoc_service" model="ir.actions.act_window">
+        <field name="name">CRM Service</field>
+        <field name="res_model">crm.landoc.service</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_crm_landoc_service_root"
+              name="CRM Service"
+              parent="custom_landoc.master_data_main_menu"
+              groups="custom_landoc.group_landoc_manager"
+              action="action_crm_landoc_service"/>
+</odoo>

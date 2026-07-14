@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_account_details_tree" model="ir.ui.view">
+        <field name="name">whatsapp.account.details.tree</field>
+        <field name="model">whatsapp.account.details</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="account_app_id"/>
+                <field name="phone_number_id"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_account_details_form" model="ir.ui.view">
+        <field name="name">whatsapp.account.details.form</field>
+        <field name="model">whatsapp.account.details</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" required="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <field name="version" invisible="1"/>
+                        <field name="is_active" invisible="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Configuration">
+                            <group>
+                                <group>
+                                    <field name="account_app_id"/>
+                                    <field name="phone_number_id"/>
+                                    <field name="access_token"/>
+                                    <button name="action_test_connection" type="object" string="Test Connection"
+                                            class="oe_highlight"/>
+                                </group>
+                                <group>
+                                    <field name="app_secret"/>
+                                    <field name="whatsapp_app_id"/>
+                                </group>
+                            </group>
+                            <group string="Response Configuration">
+                                <group>
+                                    <field name="is_ngrok" invisible="1"/>
+                                    <field name="ngrok_url" invisible="not is_ngrok" required="is_ngrok"/>
+                                    <field name="webhook_url" widget="CopyClipboardURL"/>
+                                </group>
+                                <group>
+                                    <field name="hardcoded_token" invisible="not is_ngrok" required="is_ngrok"/>
+                                    <field name="webhook_token" widget="CopyClipboardChar"/>
+                                </group>
+                            </group>
+
+                            <group string="Notifications">
+                                <group>
+                                    <field name="notify_users_ids" widget="many2many_tags"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_account_details" model="ir.actions.act_window">
+        <field name="name">WhatsApp Account</field>
+        <field name="res_model">whatsapp.account.details</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first account detail
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu Items -->
+    <menuitem id="menu_whatsapp_business_root" name="WhatsApp Business"
+              web_icon="whatsapp_business,static/description/icon.png"/>
+    <menuitem id="menu_account_details" name="Account Details" sequence="1" parent="menu_whatsapp_business_root"
+              action="action_account_details"/>
+</odoo>

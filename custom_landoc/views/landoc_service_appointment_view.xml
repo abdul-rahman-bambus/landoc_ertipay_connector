@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ========================================================= -->
+    <!-- LANDOC SERVICE AVAILABILITY                              -->
+    <!-- ========================================================= -->
+
+    <record id="view_landoc_service_availability_list" model="ir.ui.view">
+        <field name="name">landoc.service.availability.list</field>
+        <field name="model">landoc.service.availability</field>
+        <field name="arch" type="xml">
+            <list string="Service Availability">
+                <field name="available_date"/>
+                <field name="service_name"/>
+                <field name="service_code"/>
+                <field name="month"/>
+                <field name="year"/>
+                <field name="location"/>
+                <field name="booking_count"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_landoc_service_availability_form" model="ir.ui.view">
+        <field name="name">landoc.service.availability.form</field>
+        <field name="model">landoc.service.availability</field>
+        <field name="arch" type="xml">
+            <form string="Service Availability">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Service">
+                            <field name="service_category_id" options="{'no_create': True}" required="1"/>
+                            <field name="service_ids" widget="many2many_tags" options="{'no_create': True}" required="1"/>
+                            <field name="service_name" invisible="1" readonly="1" force_save="1"/>
+                            <field name="service_code" invisible="1" readonly="1" force_save="1"/>
+                            <field name="available_date"/>
+                        </group>
+
+                        <group string="Date Grouping">
+                            <field name="month" readonly="1"/>
+                            <field name="year" readonly="1"/>
+                            <field name="location"/>
+                            <field name="booking_count" readonly="1"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+
+                    <group string="Notes">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_landoc_service_availability_calendar" model="ir.ui.view">
+        <field name="name">landoc.service.availability.calendar</field>
+        <field name="model">landoc.service.availability</field>
+        <field name="arch" type="xml">
+            <calendar
+                    string="Service Calendar"
+                    date_start="available_date"
+                    mode="month"
+                    color="service_code"
+            >
+                <field name="name"/>
+                <field name="service_name"/>
+                <field name="location"/>
+                <field name="notes"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_landoc_service_availability_search" model="ir.ui.view">
+        <field name="name">landoc.service.availability.search</field>
+        <field name="model">landoc.service.availability</field>
+        <field name="arch" type="xml">
+            <search string="Service Availability">
+                <field name="service_name"/>
+                <field name="service_code"/>
+                <field name="available_date"/>
+                <field name="location"/>
+                <field name="month"/>
+                <field name="year"/>
+
+                <filter name="active"
+                        string="Active"
+                        domain="[('active','=',True)]"/>
+
+                <filter name="inactive"
+                        string="Inactive"
+                        domain="[('active','=',False)]"/>
+
+                <filter name="future_dates"
+                        string="Future Dates"
+                        domain="[('available_date','&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_by_service"
+                            string="Service"
+                            context="{'group_by':'service_code'}"/>
+
+                    <filter name="group_by_month"
+                            string="Month"
+                            context="{'group_by':'month'}"/>
+
+                    <filter name="group_by_year"
+                            string="Year"
+                            context="{'group_by':'year'}"/>
+
+                    <filter name="group_by_location"
+                            string="Location"
+                            context="{'group_by':'location'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_landoc_service_availability" model="ir.actions.act_window">
+        <field name="name">Service Availability</field>
+        <field name="res_model">landoc.service.availability</field>
+        <field name="view_mode">list,calendar,form</field>
+        <field name="search_view_id" ref="view_landoc_service_availability_search"/>
+        <field name="context">{'search_default_active': 1, 'search_default_future_dates': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Configure service available dates here.
+            </p>
+        </field>
+    </record>
+
+
+    <!-- ========================================================= -->
+    <!-- LANDOC SERVICE BOOKING                                   -->
+    <!-- ========================================================= -->
+
+    <record id="view_landoc_service_booking_list" model="ir.ui.view">
+        <field name="name">landoc.service.booking.list</field>
+        <field name="model">landoc.service.booking</field>
+        <field name="arch" type="xml">
+            <list string="Service Bookings">
+                <field name="name"/>
+                <field name="request_number"/>
+                <field name="customer_name"/>
+                <field name="customer_mobile"/>
+                <field name="service_name"/>
+                <field name="service_code"/>
+                <field name="selected_date"/>
+                <field name="location"/>
+                <field name="status" widget="badge"/>
+                <field name="source"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_landoc_service_booking_form" model="ir.ui.view">
+        <field name="name">landoc.service.booking.form</field>
+        <field name="model">landoc.service.booking</field>
+        <field name="arch" type="xml">
+            <form string="Service Booking">
+                <header>
+                    <button name="action_confirm_booking"
+                            type="object"
+                            string="Confirm"
+                            class="btn-primary"
+                            invisible="status != 'selected'"/>
+
+                    <button name="action_cancel_booking"
+                            type="object"
+                            string="Cancel"
+                            class="btn-secondary"
+                            invisible="status not in ['selected', 'confirmed']"/>
+
+                    <button name="action_complete_booking"
+                            type="object"
+                            string="Complete"
+                            class="btn-success"
+                            invisible="status != 'confirmed'"/>
+
+                    <button name="action_reset_to_selected"
+                            type="object"
+                            string="Reset to Selected"
+                            class="btn-secondary"
+                            invisible="status not in ['cancelled', 'completed']"/>
+
+                    <field name="status"
+                           widget="statusbar"
+                           statusbar_visible="selected,confirmed,completed,cancelled"/>
+                </header>
+
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Service Request">
+                            <field name="lead_id" readonly="1"/>
+                            <field name="service_category_id" options="{'no_create': True}" force_save="1"
+                                   readonly="1"/>
+                            <field name="service_id" options="{'no_create': True}" force_save="1" readonly="1"/>
+                            <field name="request_number" readonly="1"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="customer_name" readonly="1"/>
+                            <field name="customer_mobile" readonly="1"/>
+                        </group>
+
+                        <group string="Selected Date">
+                            <field name="service_name" invisible="1" readonly="1" force_save="1"/>
+                            <field name="service_code" invisible="1" readonly="1" force_save="1"/>
+                            <field name="selected_date"/>
+                            <field name="location"/>
+                            <field name="source"/>
+                            <field name="responsible_user_id"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Calendar">
+                            <group>
+                                <field name="google_calendar_link" readonly="1"/>
+                            </group>
+                        </page>
+
+                        <page string="Bot Details">
+                            <group>
+                                <field name="bot_customer_id"/>
+                                <field name="bot_channel"/>
+                                <field name="bot_session_id"/>
+                            </group>
+                        </page>
+
+                        <page string="Notes">
+                            <field name="notes" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_landoc_service_booking_calendar" model="ir.ui.view">
+        <field name="name">landoc.service.booking.calendar</field>
+        <field name="model">landoc.service.booking</field>
+        <field name="arch" type="xml">
+            <calendar
+                    string="Service Booking"
+                    date_start="selected_date"
+                    mode="month"
+                    color="service_code"
+            >
+                <field name="name"/>
+                <field name="service_id"/>
+                <field name="partner_id"/>
+                <field name="lead_id"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_landoc_service_booking_search" model="ir.ui.view">
+        <field name="name">landoc.service.booking.search</field>
+        <field name="model">landoc.service.booking</field>
+        <field name="arch" type="xml">
+            <search string="Service Bookings">
+                <field name="name"/>
+                <field name="request_number"/>
+                <field name="customer_name"/>
+                <field name="customer_mobile"/>
+                <field name="service_code"/>
+                <field name="service_name"/>
+                <field name="selected_date"/>
+                <field name="location"/>
+
+                <filter name="selected"
+                        string="Selected"
+                        domain="[('status','=','selected')]"/>
+
+                <filter name="confirmed"
+                        string="Confirmed"
+                        domain="[('status','=','confirmed')]"/>
+
+                <filter name="completed"
+                        string="Completed"
+                        domain="[('status','=','completed')]"/>
+
+                <filter name="cancelled"
+                        string="Cancelled"
+                        domain="[('status','=','cancelled')]"/>
+
+                <filter name="today"
+                        string="Today"
+                        domain="[('selected_date','=', context_today().strftime('%Y-%m-%d'))]"/>
+
+                <filter name="future_dates"
+                        string="Future Dates"
+                        domain="[('selected_date','&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_by_service"
+                            string="Service"
+                            context="{'group_by':'service_code'}"/>
+
+                    <filter name="group_by_date"
+                            string="Selected Date"
+                            context="{'group_by':'selected_date'}"/>
+
+                    <filter name="group_by_status"
+                            string="Status"
+                            context="{'group_by':'status'}"/>
+
+                    <filter name="group_by_location"
+                            string="Location"
+                            context="{'group_by':'location'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_landoc_service_booking" model="ir.actions.act_window">
+        <field name="name">Service Bookings</field>
+        <field name="res_model">landoc.service.booking</field>
+        <field name="view_mode">list,calendar,form</field>
+        <field name="search_view_id" ref="view_landoc_service_booking_search"/>
+        <field name="context">{'search_default_future_dates': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Customer selected service dates will appear here.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_menu_landoc_service_booking" model="ir.actions.act_window">
+        <field name="name">Service Bookings</field>
+        <field name="res_model">landoc.service.booking</field>
+        <field name="view_mode">calendar,form</field>
+        <field name="search_view_id" ref="view_landoc_service_booking_search"/>
+        <field name="context">{'search_default_future_dates': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Customer selected service dates will appear here.
+            </p>
+        </field>
+    </record>
+
+
+    <!-- ========================================================= -->
+    <!-- MENU                                                     -->
+    <!-- ========================================================= -->
+
+    <menuitem id="menu_landoc_service_appointment_root"
+              name="Service Appointments"
+              parent="custom_landoc.master_data_main_menu"
+              sequence="80"/>
+
+    <menuitem id="menu_landoc_service_availability"
+              name="Service Availability"
+              parent="menu_landoc_service_appointment_root"
+              action="action_landoc_service_availability"
+              sequence="10"/>
+
+
+    <menuitem id="menu_service_appointment_crm_root"
+              name="Service Appointments"
+              parent="crm.crm_menu_root"
+              sequence="11"/>
+    <menuitem id="menu_landoc_service_booking"
+              name="Service Bookings"
+              parent="menu_service_appointment_crm_root"
+              action="action_menu_landoc_service_booking"
+              sequence="10"/>
+
+</odoo>
+

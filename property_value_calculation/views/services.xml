@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="service_type_form_inherit" model="ir.ui.view">
+            <field name="name">property_value_calculation.service_type.form</field>
+            <field name="model">service.type</field>
+            <field name="inherit_id" ref="custom_landoc.service_type_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='vendor_products']" position="after">
+                    <page string="Guideline Configuration" invisible="service_type != 'document_registration'">
+                        <group>
+                            <group string="Stamp">
+                                <field name="is_stamp_percentage" string="Is Percentage"/>
+                                <label for="stamp_duty"/>
+                                <div name="stamp_duty_unit">
+                                    <field name="stamp_duty" style="max-width:130px" class="oe_inline"/>
+                                    <span name="stamp_duty_unit_span" invisible="not is_stamp_percentage">
+                                        <strong>%</strong>
+                                    </span>
+                                </div>
+                            </group>
+                            <group string="Registration">
+                                <field name="is_registration_fee_percentage" string="Is Percentage"/>
+                                <label for="registration_fee"/>
+                                <div name="registration_fee_unit">
+                                    <field name="registration_fee" style="max-width:130px" class="oe_inline"/>
+                                    <span name="registration_fee_unit_span" invisible="not is_registration_fee_percentage">
+                                        <strong>%</strong>
+                                    </span>
+                                </div>
+
+                            </group>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

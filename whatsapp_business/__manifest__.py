@@ -1,0 +1,38 @@
+{
+    "name": "Whatsapp Business Integration",
+    "version": "18.0.1.0.0",
+    "summary": "Integrate Whatsapp Business in Odoo.",
+    "category": "Tools",
+    'author': 'Bambus Technologies LLP',
+    'sequence': '1',
+    'website': 'https://bambustechnologies.in/',
+    "depends": ["base", "web", "mail", "sale", "contacts", "base_geolocalize"],
+    "data": [
+        "security/whatsapp_security.xml",
+        "security/ir.model.access.csv",
+        "data/whatsapp_message_preview.xml",
+        "data/ir_cron_auto_status_validate.xml",
+        "wizard/message_preview.xml",
+        "wizard/chatter_template_preview.xml",
+        "views/whatsapp_account_views.xml",
+        "views/api_log.xml",
+        "views/whatsapp_message_views.xml",
+        "views/whatsapp_template_views.xml",
+    ],
+    'assets': {
+        'web.assets_backend': [
+            'whatsapp_business/static/src/scss/*.scss',
+            'whatsapp_business/static/src/chatter_patch/*.js',
+            'whatsapp_business/static/src/chatter_patch/*.xml',
+            'whatsapp_business/static/src/variable_textfiled/*.xml',
+            'whatsapp_business/static/src/variable_textfiled/*.js',
+            'whatsapp_business/static/src/discuss_app/public_web/*.js',
+            'whatsapp_business/static/src/discuss_app/common/*.js',
+            'whatsapp_business/static/src/discuss_app/web/*.js',
+        ],
+    },
+    "images": ['static/description/icon.png'],
+    "installable": True,
+    "license": 'LGPL-3',
+    "application": True
+}

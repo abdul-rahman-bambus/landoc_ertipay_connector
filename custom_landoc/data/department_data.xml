@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+         <record id="crm_team_department_crm" model="crm.team">
+            <field name="name">CRM</field>
+        </record>
+
+        <record id="crm_team_department_legal" model="crm.team">
+            <field name="name">LEGAL</field>
+        </record>
+
+        <record id="crm_team_department_internal" model="crm.team">
+            <field name="name">INTERNAL</field>
+        </record>
+
+        <record id="crm_team_department_external" model="crm.team">
+            <field name="name">EXTERNAL</field>
+        </record>
+
+        <record id="crm_team_department_marketing" model="crm.team">
+            <field name="name">MARKETING</field>
+        </record>
+
+        <record id="crm_team_department_accounts" model="crm.team">
+            <field name="name">ACCOUNTS</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+
+        <!--  ################################  -->
+        <!--  ## Landoc Category and Groups ##  -->
+        <!--  ################################  -->
+
+        <!-- Category -->
+        <record id="landoc_team_lead_category" model="ir.module.category">
+            <field name="name">Landoc Team Lead User</field>
+            <field name="sequence">1</field>
+        </record>
+
+        <record id="landoc_category" model="ir.module.category">
+            <field name="name">Landoc User</field>
+            <field name="sequence">2</field>
+        </record>
+
+        <!-- Group: CRM User -->
+        <record id="group_landoc_user" model="res.groups">
+            <field name="name">Landoc CRM User</field>
+            <field name="category_id" ref="custom_landoc.landoc_category"/>
+        </record>
+
+        <!-- Group: CRM TL User -->
+        <record id="group_landoc_crm_team_lead_user" model="res.groups">
+            <field name="name">Landoc CRM Team Lead User</field>
+            <field name="category_id" ref="custom_landoc.landoc_team_lead_category"/>
+        </record>
+
+        <!-- Group: Marketing User -->
+        <record id="group_landoc_marketing_user" model="res.groups">
+            <field name="name">Landoc Marketing User</field>
+            <field name="category_id" ref="custom_landoc.landoc_category"/>
+        </record>
+
+        <!-- Group: Marketing TL User -->
+        <record id="group_landoc_marketing_team_lead_user" model="res.groups">
+            <field name="name">Landoc Marketing Team Lead User</field>
+            <field name="category_id" ref="custom_landoc.landoc_team_lead_category"/>
+        </record>
+
+        <!-- Group: Internal User -->
+        <record id="group_landoc_internal_user" model="res.groups">
+            <field name="name">Landoc Internal User</field>
+            <field name="category_id" ref="custom_landoc.landoc_category"/>
+        </record>
+
+        <!-- Group: Internal TL User -->
+        <record id="group_landoc_internal_team_lead_user" model="res.groups">
+            <field name="name">Landoc Internal Team Lead User</field>
+            <field name="category_id" ref="custom_landoc.landoc_team_lead_category"/>
+        </record>
+
+        <!-- Group: External User -->
+        <record id="group_landoc_external_user" model="res.groups">
+            <field name="name">Landoc External User</field>
+            <field name="category_id" ref="custom_landoc.landoc_category"/>
+        </record>
+
+        <!-- Group: External TL User -->
+        <record id="group_landoc_external_team_lead_user" model="res.groups">
+            <field name="name">Landoc External Team Lead User</field>
+            <field name="category_id" ref="custom_landoc.landoc_team_lead_category"/>
+        </record>
+
+        <!-- Group: Accounting User -->
+        <record id="group_landoc_accounting_user" model="res.groups">
+            <field name="name">Landoc Accounting User</field>
+            <field name="category_id" ref="custom_landoc.landoc_category"/>
+        </record>
+
+        <!-- Group: Accounting TL User -->
+        <record id="group_landoc_accounting_team_lead_user" model="res.groups">
+            <field name="name">Landoc Accounting Team Lead User</field>
+            <field name="category_id" ref="custom_landoc.landoc_team_lead_category"/>
+        </record>
+
+        <!-- Group: Legal User -->
+        <record id="group_landoc_legal_user" model="res.groups">
+            <field name="name">Landoc Legal User</field>
+            <field name="category_id" ref="custom_landoc.landoc_category"/>
+        </record>
+
+        <!-- Group: Legal TL User -->
+        <record id="group_landoc_legal_team_lead_user" model="res.groups">
+            <field name="name">Landoc Legal Team Lead User</field>
+            <field name="category_id" ref="custom_landoc.landoc_team_lead_category"/>
+        </record>
+
+
+        <!-- Group: Manager -->
+        <record id="group_landoc_manager" model="res.groups">
+            <field name="name">Landoc Manager</field>
+            <field name="category_id" ref="custom_landoc.landoc_team_lead_category"/>
+            <field name="implied_ids" eval="[(4, ref('group_landoc_user')),
+                                             (4, ref('group_landoc_crm_team_lead_user')),
+                                             (4, ref('group_landoc_marketing_user')),
+                                             (4, ref('group_landoc_marketing_team_lead_user')),
+                                             (4, ref('group_landoc_internal_user')),
+                                             (4, ref('group_landoc_internal_team_lead_user')),
+                                             (4, ref('group_landoc_external_user')),
+                                             (4, ref('group_landoc_external_team_lead_user')),
+                                             (4, ref('group_landoc_accounting_user')),
+                                             (4, ref('group_landoc_accounting_team_lead_user')),
+                                             (4, ref('group_landoc_legal_user')),
+                                             (4, ref('group_landoc_legal_team_lead_user')),
+            ]"/>
+        </record>
+
+    </data>
+</odoo>
+

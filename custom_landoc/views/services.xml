@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Form: service Type -->
+        <record id="service_type_form_view" model="ir.ui.view">
+            <field name="name">service.type.form</field>
+            <field name="model">service.type</field>
+            <field name="arch" type="xml">
+                <form string="Services">
+                    <sheet>
+                        <group cols='3'>
+                            <group>
+                                <field name="name"/>
+                                <field name="service_category_id" options="{'no_create': True}"/>
+                            </group>
+                            <group>
+                                <field name="code" readonly="1" force_save="1"/>
+                                <field name="service_type"/>
+                                <field name="religion" required="service_type =='marriage_registration'"/>
+                                <field name="fees_above_ninety" invisible="service_type !='marriage_registration'"/>
+                                <field name="fees_above_one_hundred_fifty" invisible="service_type !='marriage_registration'"/>
+                            </group>
+                        </group>
+
+                        <notebook>
+                            <page name="vendor_products" invisible="1" string="Vendor Products">
+                                <group>
+                                    <group>
+                                        <field name="vendor_products_ids" widget="many2many_tags"/>
+                                    </group>
+                                </group>
+                            </page>
+                        </notebook>
+
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- List: service Type -->
+        <record id="service_type_list_view" model="ir.ui.view">
+            <field name="name">service.type.list</field>
+            <field name="model">service.type</field>
+            <field name="arch" type="xml">
+                <list string="Services">
+                    <field name="name"/>
+                    <field name="service_category_id"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Search: Service Type -->
+        <record id="service_type_search_view" model="ir.ui.view">
+            <field name="name">service.type.search</field>
+            <field name="model">service.type</field>
+            <field name="arch" type="xml">
+                <search string="Service Type">
+                    <group expand="0" string="Group By">
+                        <filter string="Service Category" name="service_category"
+                                context="{'group_by':'service_category_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+
+        <!-- Window: Action -->
+        <record id="service_type_act_window" model="ir.actions.act_window">
+            <field name="name">Service</field>
+            <field name="res_model">service.type</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="service_type_search_view"/>
+            <field name="context">{'search_default_service_category': 1}</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    There is no examples click here to add new ModelTitle.
+                </p>
+            </field>
+        </record>
+
+        <!-- Menuitem -->
+        <menuitem name="Master Data" id="master_data_main_menu" parent="landoc_master_data" groups="custom_landoc.group_landoc_manager"/>
+        <menuitem name="Services" id="service_type_menu" parent="master_data_main_menu" groups="custom_landoc.group_landoc_manager"
+                  action="service_type_act_window"/>
+
+    </data>
+</odoo>

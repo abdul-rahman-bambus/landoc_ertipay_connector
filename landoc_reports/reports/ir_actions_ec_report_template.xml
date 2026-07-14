@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_ec_crm_landoc_service_document">
+        <t t-call="web.external_layout">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="template_data" t-value="doc.ec_template_data"/>
+
+                <div class="page">
+                    <div class="oe_structure"/>
+
+                    <t t-set="layout_document_title">
+                        <span>Encumbrance Certificate Report</span>
+                    </t>
+
+                    <div>
+                        <br/>
+                    </div>
+
+                    <!-- ZONE,DIST,SRO,Period  -->
+                    <div class="row mb-4">
+                        <div class="col">
+                            <strong style="color:#A8A8A8;">ZONE</strong>
+                            <div t-esc="template_data.get('ec_zone_id')"/>
+                        </div>
+                        <div class="col">
+                            <strong style="color:#A8A8A8;">DISTRICT</strong>
+                            <div t-esc="template_data.get('ec_district_id')"/>
+                        </div>
+                        <div class="col">
+                            <strong style="color:#A8A8A8;">SRO</strong>
+                            <div t-esc="template_data.get('ec_sro_id')"/>
+                        </div>
+                        <div class="col">
+                            <strong style="color:#A8A8A8;">PERIOD</strong>
+                            <div t-esc="template_data.get('ec_period')"/>
+                        </div>
+                    </div>
+
+                    <!--  SURVEY DETAILS   -->
+                    <div t-if="template_data.get('survey_details_line')">
+                        <br/>
+                        <h5 class="text-start" style="color:#A8A8A8;">SURVEY DETAILS</h5>
+                        <!-- BODY -->
+                        <table class="table table-borderless">
+                            <thead>
+                                <tr>
+                                    <th class="fw-bold">Village</th>
+                                    <th class="fw-bold">Survey No.</th>
+                                    <th class="fw-bold">Subdivision No.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="template_data.get('survey_details_line')" t-as="survey">
+                                    <tr>
+                                        <td>
+                                            <t t-esc="survey.get('ec_village_name')"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="survey.get('survey_no')"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="survey.get('sub_division_no')"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!--  PLOT DETAILS   -->
+                    <div class="row mb-2">
+                        <div t-if="template_data.get('plot_details_line')" class="col">
+                            <br/>
+                            <span class="text-start" style="color:#A8A8A8;">
+                                <h5>PLOT DETAILS</h5>
+                                <span style="color:black;">
+                                    <t t-esc="template_data.get('plot_details_line')"/>
+                                </span>
+                            </span>
+                        </div>
+
+                        <!--  FLAT DETAILS   -->
+                        <div t-if="template_data.get('flat_details_line')" class="col">
+                            <br/>
+                            <span class="text-start" style="color:#A8A8A8;">
+                                <h5>FLAT DETAILS</h5>
+                                <span style="color:black;">
+                                    <t t-esc="template_data.get('flat_details_line')"/>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!--  HOUSE DETAILS   -->
+                    <div t-if="template_data.get('house_details_line')">
+                        <br/>
+                        <h5 class="text-start" style="color:#A8A8A8;">HOUSE DETAILS</h5>
+                        <!-- BODY -->
+                        <table class="table table-borderless">
+                            <thead>
+                                <tr>
+                                    <th class="fw-bold">Door No.</th>
+                                    <th class="fw-bold">Ward</th>
+                                    <th class="fw-bold">Block</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="template_data.get('house_details_line')" t-as="house">
+                                    <tr>
+                                        <td>
+                                            <t t-esc="house.get('ec_door_no')"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="house.get('ec_ward_no')"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="house.get('ec_block_no')"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!--  BOUNDARY DETAILS   -->
+                    <div t-if="template_data.get('boundary_details_line')">
+                        <br/>
+                        <h5 class="text-start" style="color:#A8A8A8;">BOUNDARY DETAILS</h5>
+                        <!-- BODY -->
+                        <table class="table table-borderless">
+                            <thead>
+                                <tr>
+                                    <th class="fw-bold">East</th>
+                                    <th class="fw-bold">West</th>
+                                    <th class="fw-bold">North</th>
+                                    <th class="fw-bold">South</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="template_data.get('boundary_details_line')" t-as="boundary">
+                                    <tr>
+                                        <td>
+                                            <t t-esc="boundary.get('ec_east')"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="boundary.get('ec_west')"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="boundary.get('ec_north')"/>
+                                        </td>
+                                        <td>
+                                            <t t-esc="boundary.get('ec_south')"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+
+
+                    <!--  EXTENT AND BUILD-UP AREA   -->
+                    <div>
+                        <div>
+                            <br/>
+                            <span class="text-start" style="color:#A8A8A8;">
+                                <h5>EXTENT AND BUILD-UP AREA</h5>
+
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col">
+                            <br/>
+                            <span class="text-start">
+                                <strong>TOTAL EXTENT</strong>
+                            </span>
+                        </div>
+                        <div class="col">
+                            <br/>
+                            <span style="color:black;">
+                                <t t-esc="template_data.get('total_extent')"/>
+                            </span>
+                        </div>
+
+                        <div class="col">
+                            <br/>
+                            <span class="text-start">
+                                <strong>CONVEYED EXTENT</strong>
+                            </span>
+                        </div>
+                        <div class="col">
+                            <br/>
+                            <span style="color:black;">
+                                <t t-esc="template_data.get('conveyed_extent')"/>
+                            </span>
+                        </div>
+
+
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col">
+                            <br/>
+                            <span class="text-start">
+                                <strong>UNDIVIDED SHARE</strong>
+                            </span>
+                        </div>
+                        <div class="col">
+                            <br/>
+                            <span style="color:black;">
+                                <t t-esc="template_data.get('undivided_share')"/>
+                            </span>
+                        </div>
+
+                        <div class="col">
+                            <br/>
+                            <span class="text-start">
+                                <strong>BUILD-UP AREA</strong>
+                            </span>
+                        </div>
+                        <div class="col">
+                            <br/>
+                            <span style="color:black;">
+                                <t t-esc="template_data.get('build_up_area')"/>
+                            </span>
+                        </div>
+
+
+                    </div>
+
+
+                    <!--  ADDITIONAL DETAILS   -->
+                    <div>
+                        <div>
+                            <br/>
+                            <span class="text-start" style="color:#A8A8A8;">
+                                <h5>ADDITIONAL DETAILS</h5>
+
+                            </span>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col">
+                                <br/>
+                                <span class="text-start">
+                                    <strong>OLD SURVEY NO./SUB DIV NO.</strong>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <br/>
+                                <span style="color:black;">
+                                    <t t-esc="template_data.get('old_survey_or_sub_div_no')"/>
+                                </span>
+                            </div>
+
+                            <div class="col">
+                                <br/>
+                                <span class="text-start">
+                                    <strong>T.S. NO.</strong>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <br/>
+                                <span style="color:black;">
+                                    <t t-esc="template_data.get('t_s_no')"/>
+                                </span>
+                            </div>
+
+
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col">
+                                <br/>
+                                <span class="text-start">
+                                    <strong>OLD DOOR NO.</strong>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <br/>
+                                <span style="color:black;">
+                                    <t t-esc="template_data.get('old_door_no')"/>
+                                </span>
+                            </div>
+
+                            <div class="col">
+                                <br/>
+                                <span class="text-start">
+                                    <strong>NAME OF DECLARED OWNER</strong>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <br/>
+                                <span style="color:black;">
+                                    <t t-esc="template_data.get('name_of_declared_owner')"/>
+                                </span>
+                            </div>
+
+
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col">
+                                <br/>
+                                <span class="text-start">
+                                    <strong>FATHER NAME</strong>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <br/>
+                                <span style="color:black;">
+                                    <t t-esc="template_data.get('father_name')"/>
+                                </span>
+                            </div>
+
+                            <div class="col">
+                                <br/>
+                                <span class="text-start">
+                                    <strong>ANY OTHER RELEVANT INFORM</strong>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <br/>
+                                <span style="color:black;">
+                                    <t t-esc="template_data.get('any_other_relevant_info')"/>
+                                </span>
+                            </div>
+
+
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col">
+                                <br/>
+                                <span class="text-start">
+                                    <strong>ANY REGISTERED DOCUMENT NO</strong>
+                                </span>
+                            </div>
+                            <div class="col">
+                                <br/>
+                                <span style="color:black;">
+                                    <t t-esc="template_data.get('any_registered_document_no')"/>
+                                </span>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                    <!-- Verify and Approved  -->
+                    <div class="row mb-3">
+                        <!-- Date -->
+                        <div class="col">
+                            <div>
+                                <br/>
+                                <br/>
+                                <br/>
+                                <br/>
+                                <br/>
+                                <h5>
+                                    <t t-esc="template_data.get('current_date')"/>
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col">
+                        </div>
+                        <div class="col">
+                            <div class="text-center">
+                                <br/>
+                                <h5 class="fw-bold">Verified &amp; Approved</h5>
+                                <h5>by</h5>
+                                <br/>
+                                <br/>
+                                <h5 class="fw-bold">
+                                    <t t-esc="template_data.get('current_user')"/>
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+
+    <template id="report_ec_crm_landoc_service_raw">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="landoc_reports.report_ec_crm_landoc_service_document"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_ec_crm_landoc_service">
+        <t t-call="landoc_reports.report_ec_crm_landoc_service_raw"/>
+    </template>
+
+</odoo>
+

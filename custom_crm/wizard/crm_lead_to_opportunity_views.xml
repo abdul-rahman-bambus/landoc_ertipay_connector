@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_crm_lead2opportunity_partner_inherit" model="ir.ui.view">
+            <field name="name">view.crm.lead2opportunity.partner.inherit</field>
+            <field name="model">crm.lead2opportunity.partner</field>
+            <field name="inherit_id" ref="crm.view_crm_lead2opportunity_partner"/>
+            <field name="arch" type="xml">
+                <!-- Salesperson -->
+                <xpath expr="//field[@name='user_id']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                    <attribute name="force_save">1</attribute>
+                </xpath>
+
+                <!-- Sales Team -->
+                <xpath expr="//field[@name='team_id']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                    <attribute name="force_save">1</attribute>
+                </xpath>
+
+                <!-- Customer -->
+                <xpath expr="//field[@name='partner_id']" position="attributes">
+                    <attribute name="readonly">1</attribute>
+                    <attribute name="force_save">1</attribute>
+                </xpath>
+
+                <!-- Action -->
+                <xpath expr="//field[@name='action']" position="after">
+                    <field name="action_view" nolabel="1" readonly="1" force_save="1" widget="radio"/>
+                </xpath>
+                <xpath expr="//field[@name='action']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <!-- Service Process -->
+                <xpath expr="//group[@name='action']" position="after">
+                    <group name="service_process" string="Service Process" invisible="not service_visibility">
+                        <group>
+                            <field name="service_category_id" invisible="1" readonly="1"/>
+                            <field name="workflow_master_id" invisible="1"/>
+                            <field name="is_ec" invisible="1"/>
+                            <field name="is_document_registation" invisible="1"/>
+                            <field name="service_visibility" invisible="1"/>
+                            <field name="service_id" readonly="1"/>
+                            <field name="is_ec_apply" invisible="is_ec"/>
+                        </group>
+
+                        <group>
+                            <field name="ec_start_date" invisible="not is_ec_apply" required="is_ec_apply"/>
+                            <field name="ec_end_date" invisible="not is_ec_apply" required="is_ec_apply"/>
+                            <field name="ec_end_date_warning" string=" " class="text-danger"
+                                   invisible="not ec_end_date_warning" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="lead_id" invisible="1" readonly="1"/>
+                        </group>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

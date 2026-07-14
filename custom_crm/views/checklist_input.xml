@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Form: Checklist Input -->
+        <record id="checklist_input_form_view" model="ir.ui.view">
+            <field name="name">checklist.input.form</field>
+            <field name="model">checklist.input</field>
+            <field name="arch" type="xml">
+                <form string="Checklist Input" create="0">
+                    <header>
+                        <button name="action_set_to_confirm" string="Confirm" type="object"
+                                invisible="state == 'confirm'"/>
+                        <button name="action_set_to_draft" string="Set to Draft" type="object"
+                                invisible="state == 'draft'"/>
+                        <button name="action_mark_documents_verified" string="Mark Documents Verified" type="object"
+                                invisible="state in ['confirm', 'document_verified']"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,document_verified,confirm"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1" placeholder="Name"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="name" invisible="1" readonly="1"/>
+                                <field name="is_service_checklist" invisible="1" readonly="1"/>
+                                <field name="lead_id" options="{'no_create': True}" invisible="1" readonly="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Content Checklists" invisible="is_service_checklist">
+                                <field name="checklist_line_ids" readonly="state == 'confirm'">
+                                    <list editable="bottom" create="0" delete="0">
+                                        <field name="order_sequence" column_invisible="0" readonly="0" optional="hide"/>
+                                        <field name="client_type" column_invisible="0" readonly="1"/>
+                                        <field name="is_seller_minor" column_invisible="1" readonly="1"/>
+                                        <field name="is_buyer_minor" column_invisible="1" readonly="1"/>
+                                        <field name="client_type_name"/>
+                                        <field name="contact_name" readonly="1"/>
+                                        <!--   <field name="name"/>-->
+                                        <button name="action_checklist_form" type="object" string=" " icon="fa-pencil-square-o"/>
+                                        <!--   <field name="data_field"/>-->
+                                        <field name="file_name" column_invisible="1"/>
+                                        <field name="attachments" filename="file_name" column_invisible="1" readonly="1" widget="binary"/>
+                                        <!--   <field name="is_data_required" readonly="1" column_invisible="1"/>-->
+                                        <!--   <field name="is_attachment_required" readonly="1" column_invisible="1"/>-->
+                                        <field name="title" column_invisible="1"/>
+                                        <field name="street" column_invisible="1"/>
+                                        <field name="street2" column_invisible="1"/>
+                                        <field name="zip" column_invisible="1"/>
+                                        <field name="city_id" column_invisible="1"/>
+                                        <field name="city" column_invisible="1"/>
+                                        <field name="state_id" column_invisible="1"/>
+                                        <field name="country_id" column_invisible="1"/>
+                                        <field name="mobile" column_invisible="1"/>
+                                        <field name="relation" column_invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Service Checklist" invisible="not is_service_checklist">
+                                <field name="service_checklist_line" readonly="state == 'confirm'">
+                                    <list editable="bottom" create="0" delete="0" decoration-success="is_data_required or is_attachment_required">
+                                        <field name="name" width="600"/>
+                                        <field name="description_code" optional="hide"/>
+                                        <field name="data_field"/>
+                                        <field name="bot_status" readonly="1"/>
+                                        <field name="correction_reason"/>
+                                        <field name="file_name" column_invisible="1"/>
+                                        <field name="attachments" filename="file_name" widget="binary"/>
+                                        <field name="is_data_required" readonly="1" column_invisible="1"/>
+                                        <field name="is_attachment_required" readonly="1" column_invisible="1"/>
+                                        <button name="action_preview_attachment"
+                                                type="object"
+                                                string="Preview"
+                                                class="btn-secondary"/>
+
+                                        <button name="action_approve_document"
+                                                type="object"
+                                                invisible="bot_status == 'approved'"
+                                                string="Approve"
+                                                class="btn-primary"/>
+
+                                        <button name="action_request_correction"
+                                                type="object"
+                                                string="Request Correction"
+                                                invisible="bot_status == 'approved'"
+                                                class="btn-warning"/>
+
+                                        <button name="action_reject_document"
+                                                type="object"
+                                                string="Reject"
+                                                invisible="bot_status == 'approved'"
+                                                class="btn-danger"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Property Checklist" invisible="is_service_checklist">
+                                <field name="property_checklist_line" readonly="state == 'confirm'">
+                                    <list editable="bottom" create="0" delete="0">
+                                        <field name="name" width="600"/>
+                                        <field name="description_code" optional="hide"/>
+                                        <field name="data_field"/>
+                                        <field name="file_name" column_invisible="1"/>
+                                        <field name="attachments" filename="file_name" widget="binary"/>
+                                        <field name="is_data_required" readonly="1" column_invisible="1"/>
+                                        <field name="is_attachment_required" readonly="1" column_invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- list: Checklist Input -->
+        <record id="checklist_input_list_view" model="ir.ui.view">
+            <field name="name">checklist.input.list</field>
+            <field name="model">checklist.input</field>
+            <field name="arch" type="xml">
+                <list string="Checklist Input" create="0">
+                    <field name="name"/>
+                </list>
+            </field>
+        </record>
+
+
+        <!-- Window: Action -->
+        <record id="checklist_input_act_window" model="ir.actions.act_window">
+            <field name="name">Checklist Input</field>
+            <field name="res_model">checklist.input</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    There is no examples click here to add new ModelTitle.
+                </p>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>

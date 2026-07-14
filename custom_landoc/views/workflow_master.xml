@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Form: Workflow Master -->
+        <record id="workflow_master_form_view" model="ir.ui.view">
+            <field name="name">workflow.master.form</field>
+            <field name="model">workflow.master</field>
+            <field name="arch" type="xml">
+                <form string="Workflow Master">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="sequence"/>
+                            <h1>
+                                <field name="sequence" readonly="1" placeholder="Sequence"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="category_id" options="{'no_create': True}"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Workflows">
+                                <field name="workflow_ids">
+                                    <list editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="sequence" readonly="1" string="Step"/>
+                                        <field name="department_id" options="{'no_create': True}"/>
+                                        <field name="landoc_stage"/>
+                                        <field name="estimated_time" widget="float_time" optional="hide"/>
+                                        <field name="stage_id" options="{'no_create': True}" optional="hide"/>
+                                        <field name="default_workflow" column_invisible="1"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Configurations">
+                                <group>
+                                    <group string="Encumbrance Certificate">
+                                        <field name="is_ec_service"/>
+                                        <field name="ec_year_applicable" invisible="not is_ec_service"
+                                               required="is_ec_service"/>
+                                    </group>
+                                    <group string="Certified Copy">
+                                        <field name="book_03_or_04"/>
+
+                                    </group>
+                                </group>
+
+                            </page>
+                        </notebook>
+
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- List: Workflow Master -->
+        <record id="workflow_master_list_view" model="ir.ui.view">
+            <field name="name">workflow.master.list</field>
+            <field name="model">workflow.master</field>
+            <field name="arch" type="xml">
+                <list string="Workflow Master">
+                    <field name="sequence"/>
+                    <field name="name"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Search: Workflow Master -->
+        <record id="workflow_master_search_view" model="ir.ui.view">
+            <field name="name">workflow.master.search</field>
+            <field name="model">workflow.master</field>
+            <field name="arch" type="xml">
+                <search string="Workflow">
+                    <field name="name" string="Work Flow"
+                           filter_domain="[('name', 'ilike', self)]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Category" name="category" context="{'group_by':'category_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Window: Action -->
+        <record id="workflow_master_act_window" model="ir.actions.act_window">
+            <field name="name">Workflow Master</field>
+            <field name="res_model">workflow.master</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="workflow_master_search_view"/>
+            <field name="context">{'search_default_category': 1}</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    There is no examples click here to add new ModelTitle.
+                </p>
+            </field>
+        </record>
+
+        <!-- Menuitem -->
+        <menuitem name="Workflow Master" id="workflow_master_menu" parent="landoc_master_data"
+                  action="workflow_master_act_window" groups="custom_landoc.group_landoc_manager"/>
+
+    </data>
+</odoo>

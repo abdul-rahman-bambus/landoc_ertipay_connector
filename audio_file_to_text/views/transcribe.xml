@@ -1,0 +1,50 @@
+<odoo>
+    <record id="view_audio_transcriber_form" model="ir.ui.view">
+        <field name="name">audio.transcriber.form</field>
+        <field name="model">audio.transcriber</field>
+        <field name="arch" type="xml">
+            <form string="Audio Transcriber">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="file_name" invisible="1"/>
+                            <field name="audio_file" filename="file_name"/>
+                            <button name="transcribe_audio" type="object" string="Transcribe" class="btn-primary"/>
+                        </group>
+                        <group/>
+                    </group>
+                    <group>
+                        <field name="transcription"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_audio_transcriber_list" model="ir.ui.view">
+        <field name="name">Audio Transcriber</field>
+        <field name="model">audio.transcriber</field>
+        <field name="arch" type="xml">
+            <list string="Voice Translation Language">
+                <field name="name"/>
+                <field name="transcription"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_audio_transcriber" model="ir.actions.act_window">
+        <field name="name">Audio Transcriber</field>
+        <field name="res_model">audio.transcriber</field>
+        <field name="view_mode">form,list</field>
+        <field name="view_id" ref="view_audio_transcriber_list"/>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Create a Transcriber
+          </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_audio_transcriber_root" name="Audio Transcriber"/>
+    <menuitem id="menu_audio_transcriber" name="Transcriber" parent="menu_audio_transcriber_root" action="action_audio_transcriber"/>
+</odoo>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Tree View -->
+    <record id="view_whatsapp_message_info_tree" model="ir.ui.view">
+        <field name="name">whatsapp.message.info.tree</field>
+        <field name="model">whatsapp.message.info</field>
+        <field name="arch" type="xml">
+            <list create="1" delete="1" default_order="create_date dsc">
+                <field name="create_date"/>
+                <field name="create_uid"/>
+                <field name="mobile_number"/>
+                <field name="formated_mobile_number" column_invisible="True"/>
+                <field name="message_type"/>
+                <field name="mail_message_id" column_invisible="True"/>
+                <field name="template_id" column_invisible="True"/>
+                <field name="message_body"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+
+    <!-- Action -->
+    <record id="action_whatsapp_message_info" model="ir.actions.act_window">
+        <field name="name">WhatsApp Messages</field>
+        <field name="res_model">whatsapp.message.info</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_whatsapp_message_info"
+              name="Messages"
+              sequence="2"
+              parent="menu_whatsapp_business_root"
+              action="action_whatsapp_message_info"/>
+</odoo>

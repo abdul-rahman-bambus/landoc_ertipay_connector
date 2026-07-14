@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="mail.Chatter" t-inherit-mode="extension">
+        <xpath expr="//button[hasclass('o-mail-Chatter-activity')]" position="before">
+            <button t-if="state.is_whatsapp_btn" class="o-whatsapp-business-Chatter btn btn-secondary text-nowrap" t-att-class="{ 'my-2': !props.compactHeight }" t-on-click="popupWhatsapp">
+                        <span>Whatsapp</span>
+            </button>
+        </xpath>
+    </t>
+</templates>
+

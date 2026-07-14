@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!--  Sale Order: Form -->
+        <record id="custom_crm_view_order_form" model="ir.ui.view">
+            <field name="name">sale.order.view.form.inherit.custom.crm</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form" position="attributes">
+                    <attribute name="create">0</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <!--  Sale Order: List -->
+        <record id="view_quotation_tree_with_onboarding_view_order" model="ir.ui.view">
+            <field name="name">sale.order.view.quotation.tree.with.onboarding.inherit.custom.crm</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_quotation_tree_with_onboarding"/>
+            <field name="arch" type="xml">
+                <xpath expr="//list" position="attributes">
+                    <attribute name="create">0</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <!--  Sale Order: Kanban -->
+        <record id="view_sale_order_kanban_view_order" model="ir.ui.view">
+            <field name="name">view.sale.order.kanban.inherit.custom.crm</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_sale_order_kanban"/>
+            <field name="arch" type="xml">
+                <xpath expr="//kanban" position="attributes">
+                    <attribute name="create">0</attribute>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

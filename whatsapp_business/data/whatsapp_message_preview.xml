@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- WH: Preview Template -->
+    <template id="template_wh_message_preview" t-name="WhatsApp Preview">
+        <div class="o_message_preview overflow-hidden ps-3 pe-5">
+            <div class="o_whatsapp_message mt-2 mb-1 fs-6 lh-1 float-start text-break text-black position-relative">
+                <div class="o_whatsapp_message_core p-2 position-relative">
+                    <div class="o_whatsapp_message_header bg-opacity-50"
+                         t-if="header_type != 'none' and header_type != 'text'">
+                        <div t-attf-class="d-block bg-400 text-center {{ 'rounded-top-2' if header_type == 'location' else 'rounded-2' }}">
+                            <img class="img-fluid" t-attf-src="/whatsapp_business/static/img/{{header_type}}.png"
+                                 t-att-alt="header_type"/>
+                        </div>
+                    </div>
+                    <div class="o_whatsapp_message_header bg-opacity-50"
+                         t-if="header_type != 'none' and header_type == 'text'">
+                        <b t-out="template_id.header_text" t-if="template_id.header_type == 'text'"/>
+                        <br/>
+                        <br/>
+                    </div>
+                    <div class="o_whatsapp_message_body px-1 mt-2">
+                        <t t-raw="body"/>
+                    </div>
+                    <br/>
+                    <div t-if="footer_text" class="o_whatsapp_message_footer px-1">
+                        <span class="fs-6 text-400" t-out="footer_text"/>
+                        <span class="o_whatsapp_msg_space me-5 d-inline-block"/>
+                    </div>
+                    <span class="position-absolute bottom-0 end-0 o-whatsapp-font-11 pd-5 py-1 px-11 text-black-50"
+                          area-hidden="true" style="margin-right:8px;">
+                        <span t-esc="datetime.datetime.now().strftime('%H:%M')">06:00</span>
+                    </span>
+                </div>
+                <div class="o_whatsapp_message_links cursor-default px-2"
+                     t-if="template_id.is_phone_number or template_id.is_url or template_id.is_quick">
+                    <hr class="position-relative w-100 m-0"/>
+                    <span t-attf-class="o_whatsapp_message_link d-block text-center my-3">
+                        <t t-if="template_id.is_phone_number">
+                            <i t-attf-class="fa fs-5 fa-phone"/>
+                            <t t-out="template_id.phone_name">Sample Value</t>
+                            <br/>
+                            <br/>
+                        </t>
+                        <t t-if="template_id.is_url">
+                            <i t-attf-class="fa fs-5 fa-external-link"/>
+                            <t t-out="template_id.url_name">Sample Value</t>
+                            <br/>
+                            <br/>
+                        </t>
+                        <t t-if="template_id.is_quick">
+                            <i t-attf-class="fa fs-5 fa-reply"/>
+                            <t t-out="template_id.quick_name">Sample Value</t>
+                            <br/>
+                            <br/>
+                        </t>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </template>
+</odoo>

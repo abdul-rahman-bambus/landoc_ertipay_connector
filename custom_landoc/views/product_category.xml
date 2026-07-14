@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Form: Product Category -->
+        <record id="custom_landoc_product_category_form_view_inherit" model="ir.ui.view">
+            <field name="name">custom.landoc.product.category.form.view.inherit</field>
+            <field name="model">product.category</field>
+            <field name="inherit_id" ref="product.product_category_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@name='first']" position="before">
+                    <group invisible="not parent_id" groups="custom_landoc.group_landoc_manager">
+                        <group>
+                            <field name="is_service" invisible="not parent_id"/>
+                              <field name="is_propertychecklist_needed" invisible="not parent_id"/>
+                              <field name="is_marriage_category" invisible="not parent_id"/>
+                        </group>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="custom_landoc_view_company_form_inherit" model="ir.ui.view">
+            <field name="name">custom.landoc.view.company.form.inherit</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='phone']" position="before">
+                    <field name="zone_ids" widget="many2many_tags" groups="custom_landoc.group_landoc_manager"/>
+                    <field name="sro_ids_compute" invisible="1" widget="many2many_tags" groups="custom_landoc.group_landoc_manager"/>
+                    <field name="sro_ids" widget="many2many_tags" domain="[('id', 'in', sro_ids_compute)]" groups="custom_landoc.group_landoc_manager"/>
+                </xpath>
+                <xpath expr="//field[@name='mobile']" position="attributes">
+                    <attribute name="required">1</attribute>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

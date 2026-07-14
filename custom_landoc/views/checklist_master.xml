@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Form: Checklist Master -->
+        <record id="checklist_master_form_view" model="ir.ui.view">
+            <field name="name">checklist.master.form</field>
+            <field name="model">checklist.data</field>
+            <field name="arch" type="xml">
+                <form string="Checklist Master">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name"/>
+                            <h1>
+                                <field name="name" placeholder="Title" required="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="checklist_type" required="1"/>
+                            </group>
+                            <group>
+                                <field name="service_category_id" required="1"/>
+                                <field name="service_id" required="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Content Checklist" invisible="checklist_type != 'content'">
+                                <field name="checklist_data_ids">
+                                    <list editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="name" width="200"/>
+                                        <field name="description_code" optional="hide"/>
+                                        <field name="checklist_type" column_invisible="1"/>
+                                        <field name="client_type" width="100" required="checklist_type == 'content'"/>
+                                        <field name="is_data_required" widget="boolean_toggle" width="100"/>
+                                        <field name="is_attachment_required" widget="boolean_toggle" width="100"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Service Checklist" invisible="checklist_type != 'service'">
+
+                                <field name="checklist_data_ids">
+                                    <list editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="name" width="200"/>
+                                        <field name="description_code" optional="hide"/>
+                                        <field name="is_data_required" widget="boolean_toggle" width="100"/>
+                                        <field name="is_attachment_required" widget="boolean_toggle" width="100"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <!-- list: Checklist Master -->
+        <record id="checklist_master_list_view" model="ir.ui.view">
+            <field name="name">checklist.master.list</field>
+            <field name="model">checklist.data</field>
+            <field name="arch" type="xml">
+                <list string="Checklist Master">
+                    <field name="name"/>
+                    <field name="checklist_type"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Search: Checklist Master -->
+        <record id="checklist_master_search_view" model="ir.ui.view">
+            <field name="name">checklist.master.search</field>
+            <field name="model">checklist.data</field>
+            <field name="arch" type="xml">
+                <search string="Checklist Master">
+                    <field name="name" string="Checklist"
+                           filter_domain="[('name', 'ilike', self)]"/>
+                    <separator/>
+                    <filter name="service" string="Service Checklist" domain="[('checklist_type', '=', 'service')]"/>
+                    <filter name="content" string="Content Checklist" domain="[('checklist_type', '=', 'content')]"/>
+                    <separator/>
+                    <group expand="0" string="Group By">
+                        <filter string="Checklist Type" name="checklist_type" context="{'group_by':'checklist_type'}"/>
+                        <filter string="Category of Service" name="category_of_service" context="{'group_by':'service_category_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+
+        <!-- Window: Action -->
+        <record id="checklist_master_act_window" model="ir.actions.act_window">
+            <field name="name">Checklist Master</field>
+            <field name="res_model">checklist.data</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{
+                    'search_default_category_of_service': 1
+            }</field>
+            <field name="search_view_id" ref="checklist_master_search_view"/>
+        </record>
+
+        <!-- Menuitem -->
+        <menuitem name="Landoc" id="landoc_master_data" groups="custom_landoc.group_landoc_manager" web_icon="custom_landoc,static/description/app_icon.png"/>
+        <menuitem name="Checklist Master" id="checklist_master_menu" parent="landoc_master_data" groups="custom_landoc.group_landoc_manager"
+                  action="checklist_master_act_window"/>
+
+    </data>
+</odoo>
