@@ -113,12 +113,7 @@ Callbacks older than 5 minutes are rejected to reduce replay risk.
 ## Installation
 
 1. Copy this repository into the Odoo addons path.
-2. Ensure the Python dependency is available in the Odoo environment:
-
-   ```bash
-   pip install pycryptodome
-   ```
-
+2. Ensure the Odoo server has the `openssl` command available. Most Linux servers include it by default.
 3. Restart Odoo.
 4. Update the app list.
 5. Install **Payment Provider: Ertipay**.
@@ -166,3 +161,4 @@ Use **Test Mode** for UAT and **Enabled** for production.
 - Dynamic QR support can be extended if Ertipay returns a QR URL for `initMode = 01`.
 - Refund handling is not included in the initial version.
 - Do not paste production credentials into source code. Store them only in the Odoo payment provider configuration.
+- This module depends only on Odoo `payment`; `website_sale` is intentionally not required because quotation preview/payment links can use the standard payment flow without installing the ecommerce shop module.

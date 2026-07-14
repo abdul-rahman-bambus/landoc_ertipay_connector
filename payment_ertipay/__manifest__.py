@@ -5,15 +5,12 @@
     'summary': 'Accept UPI payments through the Ertipay pay-in gateway.',
     'author': 'Bambus Technologies LLP',
     'website': 'https://bambustechnologies.in/',
-    'depends': ['payment', 'website_sale'],
+    'depends': ['payment'],
     'data': [
         'views/payment_ertipay_templates.xml',
         'views/payment_provider_views.xml',
         'data/payment_provider_data.xml',
     ],
-    'external_dependencies': {
-        'python': ['Crypto'],
-    },
     'license': 'OPL-1',
     'installable': True,
     'auto_install': False,

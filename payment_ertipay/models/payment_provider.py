@@ -1,11 +1,10 @@
 import json
 import logging
 import secrets
+import subprocess
 from datetime import timedelta
 
 import requests
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
@@ -116,13 +115,25 @@ class PaymentProvider(models.Model):
         })
         return data['token']
 
+    def _ertipay_run_openssl(self, payload, key_hex, iv_hex, decrypt=False):
+        command = ['openssl', 'enc', '-aes-128-cbc', '-K', key_hex, '-iv', iv_hex]
+        if decrypt:
+            command.insert(2, '-d')
+        try:
+            result = subprocess.run(command, input=payload, capture_output=True, check=True)
+        except FileNotFoundError as error:
+            raise UserError(_('OpenSSL is required on the Odoo server to process Ertipay encrypted payloads.')) from error
+        except subprocess.CalledProcessError as error:
+            _logger.exception('OpenSSL failed while processing Ertipay payload: %s', error.stderr.decode('utf-8', errors='ignore'))
+            raise UserError(_('Unable to process the Ertipay encrypted payload.')) from error
+        return result.stdout
+
     def _ertipay_encrypt(self, payload):
         self.ensure_one()
         raw_payload = json.dumps(payload, separators=(',', ':'), ensure_ascii=False)
         key = bytes.fromhex(self.ertipay_encryption_key.strip())
         iv = secrets.token_bytes(16)
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        encrypted = cipher.encrypt(pad(raw_payload.encode('utf-8'), AES.block_size))
+        encrypted = self._ertipay_run_openssl(raw_payload.encode('utf-8'), key.hex(), iv.hex(), decrypt=False)
         return '%s:%s' % (iv.hex(), encrypted.hex())
 
     def _ertipay_decrypt(self, encrypted_data):
@@ -132,6 +143,5 @@ class PaymentProvider(models.Model):
         except ValueError as error:
             raise UserError(_('Ertipay returned encrypted data in an invalid format.')) from error
         key = bytes.fromhex(self.ertipay_encryption_key.strip())
-        cipher = AES.new(key, AES.MODE_CBC, bytes.fromhex(iv_hex))
-        decrypted = unpad(cipher.decrypt(bytes.fromhex(encrypted_hex)), AES.block_size)
+        decrypted = self._ertipay_run_openssl(bytes.fromhex(encrypted_hex), key.hex(), iv_hex, decrypt=True)
         return json.loads(decrypted.decode('utf-8'))
