@@ -5,6 +5,7 @@
         <field name="code">ertipay</field>
         <field name="state">disabled</field>
         <field name="is_published">False</field>
+        <field name="payment_method_ids" eval="[(4, ref('payment.payment_method_upi'))]"/>
         <field name="company_id" ref="base.main_company"/>
     </record>
 </odoo>
