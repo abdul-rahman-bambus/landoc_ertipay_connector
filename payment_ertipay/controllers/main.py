@@ -13,7 +13,18 @@ class ErtipayController(http.Controller):
 
     @http.route('/payment/ertipay/redirect', type='http', auth='public', website=True, csrf=False)
     def ertipay_redirect(self, **kwargs):
-        return request.render('payment_ertipay.redirect_to_upi', kwargs)
+        reference = kwargs.get('reference')
+        intent_link = kwargs.get('intent_link')
+        if not intent_link and reference:
+            tx = request.env['payment.transaction'].sudo().search([
+                ('reference', '=', reference),
+                ('provider_code', '=', 'ertipay'),
+            ], limit=1)
+            intent_link = tx.ertipay_intent_link
+        return request.render('payment_ertipay.redirect_to_upi', {
+            'intent_link': intent_link,
+            'reference': reference,
+        })
 
     @http.route('/payment/ertipay/return', type='http', auth='public', website=True, csrf=False)
     def ertipay_return(self, **kwargs):
