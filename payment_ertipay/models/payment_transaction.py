@@ -19,6 +19,7 @@ class PaymentTransaction(models.Model):
         if self.provider_code != 'ertipay':
             return res
         self.ensure_one()
+        _logger.info('[Ertipay] Building rendering values for transaction %s', self.reference)
         self._ertipay_create_upi_payment()
         return {
             'api_url': '/payment/ertipay/redirect',
@@ -30,6 +31,7 @@ class PaymentTransaction(models.Model):
         self.ensure_one()
         provider = self.provider_id
         base_url = self.get_base_url()
+        provider._ertipay_log_api('Creating UPI payment for transaction %s with amount %s', self.reference, self.amount)
         payload = {
             'type': provider.ertipay_channel_type or 'MOB',
             'vpa': provider.ertipay_vpa,

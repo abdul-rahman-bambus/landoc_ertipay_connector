@@ -101,8 +101,7 @@ class PaymentProvider(models.Model):
 
     def _ertipay_log_api(self, message, *args):
         self.ensure_one()
-        if self.ertipay_debug_logging:
-            _logger.info('[Ertipay] ' + message, *args)
+        _logger.info('[Ertipay] ' + message, *args)
 
     def _ertipay_headers(self, authenticated=True):
         self.ensure_one()
@@ -137,6 +136,7 @@ class PaymentProvider(models.Model):
         self._ertipay_validate_configuration()
         refresh_at = fields.Datetime.now() + timedelta(minutes=5)
         if self.ertipay_token and self.ertipay_token_expiry and self.ertipay_token_expiry > refresh_at:
+            self._ertipay_log_api('Using cached bearer token expiring at %s: %s', self.ertipay_token_expiry, self.ertipay_token)
             return self.ertipay_token
 
         endpoint = '%s/token' % self._ertipay_get_base_url()
