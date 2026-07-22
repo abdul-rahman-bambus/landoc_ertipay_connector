@@ -19,6 +19,7 @@ class PaymentTransaction(models.Model):
         if self.provider_code != 'ertipay':
             return res
         self.ensure_one()
+        _logger.info('[Ertipay] Building rendering values for transaction %s', self.reference)
         self._ertipay_create_upi_payment()
         return {
             'api_url': '/payment/ertipay/redirect',
@@ -30,6 +31,7 @@ class PaymentTransaction(models.Model):
         self.ensure_one()
         provider = self.provider_id
         base_url = self.get_base_url()
+        provider._ertipay_log_api('Creating UPI payment for transaction %s with amount %s', self.reference, self.amount)
         payload = {
             'type': provider.ertipay_channel_type or 'MOB',
             'vpa': provider.ertipay_vpa,
@@ -39,11 +41,17 @@ class PaymentTransaction(models.Model):
             'txnRemarks': self.reference,
             'refUrl': '%s/payment/ertipay/return' % base_url.rstrip('/'),
         }
+        provider._ertipay_log_api('UPI plain request payload before encryption: %s', payload)
         encrypted_payload = provider._ertipay_encrypt(payload)
+        request_payload = {'data': encrypted_payload}
         endpoint = '%s/upi' % provider._ertipay_get_base_url()
-        response = requests.post(endpoint, headers=provider._ertipay_headers(), json={'data': encrypted_payload}, timeout=30)
+        provider._ertipay_log_api('UPI request endpoint: %s', endpoint)
+        provider._ertipay_log_api('UPI encrypted request payload: %s', request_payload)
+        response = requests.post(endpoint, headers=provider._ertipay_headers(), json=request_payload, timeout=30)
+        provider._ertipay_log_api('UPI response status: %s', response.status_code)
         response.raise_for_status()
         body = response.json()
+        provider._ertipay_log_api('UPI response body: %s', body)
         if not body.get('success'):
             raise UserError(_('Ertipay UPI payment creation failed: %s') % (body.get('message') or body))
 
@@ -65,9 +73,12 @@ class PaymentTransaction(models.Model):
         self.ensure_one()
         provider = self.provider_id
         endpoint = '%s/status/%s' % (provider._ertipay_get_base_url(), self.reference)
+        provider._ertipay_log_api('Status request endpoint: %s', endpoint)
         response = requests.get(endpoint, headers=provider._ertipay_headers(), timeout=30)
+        provider._ertipay_log_api('Status response status: %s', response.status_code)
         response.raise_for_status()
         body = response.json()
+        provider._ertipay_log_api('Status response body: %s', body)
         encrypted_data = body.get('data', {}).get('encryptedData')
         if encrypted_data:
             return provider._ertipay_decrypt(encrypted_data)
