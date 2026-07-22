@@ -25,6 +25,13 @@ class PaymentProvider(models.Model):
         groups='base.group_system',
         help='32-character hexadecimal AES-128 key shared by Ertipay.',
     )
+    ertipay_base_url = fields.Char(
+        string='API Base URL',
+        default='https://payin.ertipay.com',
+        required_if_provider='ertipay',
+        groups='base.group_system',
+        help='Base Ertipay API host. The connector appends /uat in test mode and /prod in enabled mode.',
+    )
     ertipay_vpa = fields.Char(string='Merchant VPA', groups='base.group_system')
     ertipay_channel_type = fields.Selection(
         [('MOB', 'Mobile Intent'), ('WEB', 'Web')],
@@ -40,6 +47,11 @@ class PaymentProvider(models.Model):
     )
     ertipay_token = fields.Char(string='Cached Bearer Token', groups='base.group_system', copy=False)
     ertipay_token_expiry = fields.Datetime(string='Token Expiry', groups='base.group_system', copy=False)
+    ertipay_debug_logging = fields.Boolean(
+        string='Enable API Debug Logs',
+        groups='base.group_system',
+        help='Log Ertipay API endpoints, payloads, and responses in the Odoo server log. API secrets are masked, while tokens are shown for server-side testing.',
+    )
 
     @api.constrains('ertipay_encryption_key')
     def _check_ertipay_encryption_key(self):
@@ -56,11 +68,41 @@ class PaymentProvider(models.Model):
         self.ensure_one()
         if self.code != 'ertipay':
             return super()._get_default_payment_method_codes()
-        return ['upi']
+        return {'ertipay_upi'}
 
     def _ertipay_get_base_url(self):
         self.ensure_one()
-        return 'https://payin.ertipay.com/prod' if self.state == 'enabled' else 'https://payin.ertipay.com/uat'
+        base_url = (self.ertipay_base_url or 'https://payin.ertipay.com').rstrip('/')
+        environment_path = 'prod' if self.state == 'enabled' else 'uat'
+        if base_url.endswith('/uat') or base_url.endswith('/prod'):
+            base_url = base_url.rsplit('/', 1)[0]
+        return '%s/%s' % (base_url, environment_path)
+
+    def _ertipay_mask_sensitive(self, value):
+        if not value:
+            return value
+        value = str(value)
+        if len(value) <= 8:
+            return '****'
+        return '%s****%s' % (value[:4], value[-4:])
+
+    def _ertipay_sanitized_payload(self, payload):
+        if isinstance(payload, dict):
+            sanitized = {}
+            for key, value in payload.items():
+                if key in ('apiPayinApiSecret', 'Authorization') and value:
+                    sanitized[key] = self._ertipay_mask_sensitive(value)
+                else:
+                    sanitized[key] = self._ertipay_sanitized_payload(value)
+            return sanitized
+        if isinstance(payload, list):
+            return [self._ertipay_sanitized_payload(item) for item in payload]
+        return payload
+
+    def _ertipay_log_api(self, message, *args):
+        self.ensure_one()
+        if self.ertipay_debug_logging:
+            _logger.info('[Ertipay] ' + message, *args)
 
     def _ertipay_headers(self, authenticated=True):
         self.ensure_one()
@@ -78,6 +120,7 @@ class PaymentProvider(models.Model):
         self.ensure_one()
         missing = []
         for field_name, label in [
+            ('ertipay_base_url', _('API Base URL')),
             ('ertipay_merchant_id', _('Merchant ID')),
             ('ertipay_email', _('Pay-In Email')),
             ('ertipay_api_secret', _('Pay-In API Secret')),
@@ -101,9 +144,13 @@ class PaymentProvider(models.Model):
             'email': self.ertipay_email,
             'apiPayinApiSecret': self.ertipay_api_secret,
         }
+        self._ertipay_log_api('Token request endpoint: %s', endpoint)
+        self._ertipay_log_api('Token request payload: %s', self._ertipay_sanitized_payload(payload))
         response = requests.post(endpoint, headers=self._ertipay_headers(authenticated=False), json=payload, timeout=30)
+        self._ertipay_log_api('Token response status: %s', response.status_code)
         response.raise_for_status()
         body = response.json()
+        self._ertipay_log_api('Token response body: %s', self._ertipay_sanitized_payload(body))
         if not body.get('success') or not body.get('data', {}).get('token'):
             raise UserError(_('Ertipay token generation failed: %s') % (body.get('message') or body))
 
