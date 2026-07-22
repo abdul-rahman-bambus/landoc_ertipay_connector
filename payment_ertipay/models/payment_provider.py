@@ -47,6 +47,11 @@ class PaymentProvider(models.Model):
     )
     ertipay_token = fields.Char(string='Cached Bearer Token', groups='base.group_system', copy=False)
     ertipay_token_expiry = fields.Datetime(string='Token Expiry', groups='base.group_system', copy=False)
+    ertipay_debug_logging = fields.Boolean(
+        string='Enable API Debug Logs',
+        groups='base.group_system',
+        help='Log Ertipay API endpoints, payloads, and responses in the Odoo server log. API secrets are masked, while tokens are shown for server-side testing.',
+    )
 
     @api.constrains('ertipay_encryption_key')
     def _check_ertipay_encryption_key(self):
