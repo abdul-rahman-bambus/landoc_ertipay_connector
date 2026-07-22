@@ -56,7 +56,7 @@ class PaymentProvider(models.Model):
         self.ensure_one()
         if self.code != 'ertipay':
             return super()._get_default_payment_method_codes()
-        return {'upi'}
+        return {'ertipay_upi'}
 
     def _ertipay_get_base_url(self):
         self.ensure_one()
