@@ -7,6 +7,7 @@
         <field name="arch" type="xml">
             <xpath expr="//group[@name='provider_credentials']" position="inside">
                 <group string="Ertipay Credentials" invisible="code != 'ertipay'">
+                    <field name="ertipay_base_url" required="code == 'ertipay'"/>
                     <field name="ertipay_merchant_id" required="code == 'ertipay'"/>
                     <field name="ertipay_email" required="code == 'ertipay'"/>
                     <field name="ertipay_api_secret" password="True" required="code == 'ertipay'"/>
@@ -14,6 +15,7 @@
                     <field name="ertipay_vpa" required="code == 'ertipay'"/>
                     <field name="ertipay_channel_type" required="code == 'ertipay'"/>
                     <field name="ertipay_init_mode" required="code == 'ertipay'"/>
+                    <field name="is_published" widget="boolean_toggle" string="Published on Website"/>
                     <field name="ertipay_token" readonly="1" password="True"/>
                     <field name="ertipay_token_expiry" readonly="1"/>
                 </group>
