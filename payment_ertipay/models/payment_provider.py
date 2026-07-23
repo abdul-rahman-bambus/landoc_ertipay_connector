@@ -101,7 +101,7 @@ class PaymentProvider(models.Model):
 
     def _ertipay_log_api(self, message, *args):
         self.ensure_one()
-        _logger.info('[Ertipay] ' + message, *args)
+        _logger.warning('[Ertipay] ' + message, *args)
 
     def _ertipay_headers(self, authenticated=True):
         self.ensure_one()
@@ -146,7 +146,11 @@ class PaymentProvider(models.Model):
         }
         self._ertipay_log_api('Token request endpoint: %s', endpoint)
         self._ertipay_log_api('Token request payload: %s', self._ertipay_sanitized_payload(payload))
-        response = requests.post(endpoint, headers=self._ertipay_headers(authenticated=False), json=payload, timeout=30)
+        try:
+            response = requests.post(endpoint, headers=self._ertipay_headers(authenticated=False), json=payload, timeout=30)
+        except requests.exceptions.RequestException as error:
+            _logger.exception('[Ertipay] Token request failed before receiving a response from %s', endpoint)
+            raise UserError(_('Ertipay token request failed before receiving a response: %s') % error) from error
         self._ertipay_log_api('Token response status: %s', response.status_code)
         response.raise_for_status()
         body = response.json()

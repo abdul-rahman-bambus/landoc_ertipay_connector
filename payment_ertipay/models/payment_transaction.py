@@ -19,7 +19,7 @@ class PaymentTransaction(models.Model):
         if self.provider_code != 'ertipay':
             return res
         self.ensure_one()
-        _logger.info('[Ertipay] Building rendering values for transaction %s', self.reference)
+        _logger.warning('[Ertipay] Building rendering values for transaction %s', self.reference)
         self._ertipay_create_upi_payment()
         return {
             'api_url': '/payment/ertipay/redirect',
@@ -47,7 +47,11 @@ class PaymentTransaction(models.Model):
         endpoint = '%s/upi' % provider._ertipay_get_base_url()
         provider._ertipay_log_api('UPI request endpoint: %s', endpoint)
         provider._ertipay_log_api('UPI encrypted request payload: %s', request_payload)
-        response = requests.post(endpoint, headers=provider._ertipay_headers(), json=request_payload, timeout=30)
+        try:
+            response = requests.post(endpoint, headers=provider._ertipay_headers(), json=request_payload, timeout=30)
+        except requests.exceptions.RequestException as error:
+            _logger.exception('[Ertipay] UPI request failed before receiving a response from %s', endpoint)
+            raise UserError(_('Ertipay UPI request failed before receiving a response: %s') % error) from error
         provider._ertipay_log_api('UPI response status: %s', response.status_code)
         response.raise_for_status()
         body = response.json()
@@ -74,7 +78,11 @@ class PaymentTransaction(models.Model):
         provider = self.provider_id
         endpoint = '%s/status/%s' % (provider._ertipay_get_base_url(), self.reference)
         provider._ertipay_log_api('Status request endpoint: %s', endpoint)
-        response = requests.get(endpoint, headers=provider._ertipay_headers(), timeout=30)
+        try:
+            response = requests.get(endpoint, headers=provider._ertipay_headers(), timeout=30)
+        except requests.exceptions.RequestException as error:
+            _logger.exception('[Ertipay] Status request failed before receiving a response from %s', endpoint)
+            raise UserError(_('Ertipay status request failed before receiving a response: %s') % error) from error
         provider._ertipay_log_api('Status response status: %s', response.status_code)
         response.raise_for_status()
         body = response.json()
