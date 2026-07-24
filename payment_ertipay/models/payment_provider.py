@@ -70,6 +70,12 @@ class PaymentProvider(models.Model):
             return super()._get_default_payment_method_codes()
         return {'ertipay_upi'}
 
+    def _get_redirect_form_view(self, is_validation=False):
+        self.ensure_one()
+        if self.code != 'ertipay':
+            return super()._get_redirect_form_view(is_validation=is_validation)
+        return self.env.ref('payment_ertipay.redirect_form')
+
     def _ertipay_get_base_url(self):
         self.ensure_one()
         base_url = (self.ertipay_base_url or 'https://payin.ertipay.com').rstrip('/')

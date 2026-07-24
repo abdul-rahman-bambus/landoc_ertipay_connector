@@ -16,4 +16,12 @@
             </div>
         </t>
     </template>
+
+    <template id="redirect_form" name="Redirect Form for Ertipay UPI">
+        <form t-att-action="api_url" method="post">
+            <input type="hidden" name="intent_link" t-att-value="intent_link"/>
+            <input type="hidden" name="reference" t-att-value="reference"/>
+            <button type="submit" class="btn btn-primary d-none">Pay with Ertipay</button>
+        </form>
+    </template>
 </odoo>
