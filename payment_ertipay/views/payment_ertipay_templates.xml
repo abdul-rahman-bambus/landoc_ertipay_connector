@@ -4,11 +4,24 @@
         <t t-call="website.layout">
             <div class="container py-5 text-center">
                 <h2>Complete your payment with Ertipay UPI</h2>
-                <p class="text-muted">Use the button below to open your UPI application and complete the payment.</p>
-                <a t-att-href="intent_link" class="btn btn-primary btn-lg my-3">Pay with UPI</a>
+                <t t-if="intent_link">
+                    <p class="text-muted">Use the button below to open your UPI application and complete the payment.</p>
+                    <a t-att-href="intent_link" class="btn btn-primary btn-lg my-3">Pay with UPI</a>
+                </t>
+                <t t-else="">
+                    <p class="alert alert-warning">Ertipay did not provide a UPI payment link for this transaction. Please try again or contact support.</p>
+                </t>
                 <p class="small text-muted">After payment, you can return to this page. Odoo will update the quotation after Ertipay confirms the payment.</p>
                 <a href="/payment/status" class="btn btn-link">Check payment status</a>
             </div>
         </t>
+    </template>
+
+    <template id="redirect_form" name="Redirect Form for Ertipay UPI">
+        <form t-att-action="api_url" method="post">
+            <input type="hidden" name="intent_link" t-att-value="intent_link"/>
+            <input type="hidden" name="reference" t-att-value="reference"/>
+            <button type="submit" class="btn btn-primary d-none">Pay with Ertipay</button>
+        </form>
     </template>
 </odoo>
