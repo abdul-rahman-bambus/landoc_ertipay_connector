@@ -18,6 +18,7 @@
                     <field name="is_published" widget="boolean_toggle" string="Published on Website"/>
                     <field name="ertipay_token" readonly="1" password="True"/>
                     <field name="ertipay_token_expiry" readonly="1"/>
+                    <field name="ertipay_debug_logging"/>
                 </group>
             </xpath>
         </field>
