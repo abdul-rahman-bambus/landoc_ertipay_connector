@@ -87,7 +87,8 @@ class PaymentTransaction(models.Model):
         if not encrypted_data:
             raise UserError(_('Ertipay did not return encrypted payment data.'))
         plain_response = provider._ertipay_decrypt(encrypted_data)
-        payment_data = plain_response.get('data', {})
+        provider._ertipay_log_api('UPI decrypted response body: %s', plain_response)
+        payment_data = plain_response.get('data') or plain_response
         self.write({
             'provider_reference': payment_data.get('txnId') or self.provider_reference,
             'ertipay_txn_id': payment_data.get('txnId'),
@@ -115,7 +116,9 @@ class PaymentTransaction(models.Model):
         provider._ertipay_log_api('Status response body: %s', body)
         encrypted_data = body.get('data', {}).get('encryptedData')
         if encrypted_data:
-            return provider._ertipay_decrypt(encrypted_data)
+            plain_response = provider._ertipay_decrypt(encrypted_data)
+            provider._ertipay_log_api('Status decrypted response body: %s', plain_response)
+            return plain_response
         return body
 
     def _get_tx_from_notification_data(self, provider_code, notification_data):
@@ -131,6 +134,10 @@ class PaymentTransaction(models.Model):
             ('reference', '=', reference),
             ('ertipay_txn_ref_id', '=', reference),
         ])
+        if not tx:
+            tx = self.search([('provider_code', '=', 'ertipay')]).filtered(
+                lambda transaction: transaction._ertipay_get_txn_ref_id() == reference
+            )
         if not tx:
             tx = self.search([('provider_code', '=', 'ertipay')]).filtered(
                 lambda transaction: transaction._ertipay_get_txn_ref_id() == reference
