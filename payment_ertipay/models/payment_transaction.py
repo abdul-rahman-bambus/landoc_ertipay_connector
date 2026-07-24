@@ -62,7 +62,7 @@ class PaymentTransaction(models.Model):
             'initMode': provider.ertipay_init_mode or '04',
             'txnRefId': txn_ref_id,
             'txnAmt': '%.2f' % self.amount,
-            'txnRemarks': txn_ref_id,
+            'txnRemarks': 'Payment',
             'refUrl': '%s/payment/ertipay/return' % base_url.rstrip('/'),
         }
         provider._ertipay_log_api('UPI plain request payload before encryption: %s', payload)
@@ -131,6 +131,10 @@ class PaymentTransaction(models.Model):
             ('reference', '=', reference),
             ('ertipay_txn_ref_id', '=', reference),
         ])
+        if not tx:
+            tx = self.search([('provider_code', '=', 'ertipay')]).filtered(
+                lambda transaction: transaction._ertipay_get_txn_ref_id() == reference
+            )
         if not tx:
             tx = self.search([('provider_code', '=', 'ertipay')]).filtered(
                 lambda transaction: transaction._ertipay_get_txn_ref_id() == reference
