@@ -25,6 +25,13 @@ class PaymentProvider(models.Model):
         groups='base.group_system',
         help='32-character hexadecimal AES-128 key shared by Ertipay.',
     )
+    ertipay_base_url = fields.Char(
+        string='API Base URL',
+        default='https://payin.ertipay.com',
+        required_if_provider='ertipay',
+        groups='base.group_system',
+        help='Base Ertipay API host. The connector appends /uat in test mode and /prod in enabled mode.',
+    )
     ertipay_vpa = fields.Char(string='Merchant VPA', groups='base.group_system')
     ertipay_channel_type = fields.Selection(
         [('MOB', 'Mobile Intent'), ('WEB', 'Web')],
@@ -56,11 +63,46 @@ class PaymentProvider(models.Model):
         self.ensure_one()
         if self.code != 'ertipay':
             return super()._get_default_payment_method_codes()
-        return ['upi']
+        return {'ertipay_upi'}
+
+    def _get_redirect_form_view(self, is_validation=False):
+        self.ensure_one()
+        if self.code != 'ertipay':
+            return super()._get_redirect_form_view(is_validation=is_validation)
+        return self.env.ref('payment_ertipay.redirect_form')
 
     def _ertipay_get_base_url(self):
         self.ensure_one()
-        return 'https://payin.ertipay.com/prod' if self.state == 'enabled' else 'https://payin.ertipay.com/uat'
+        base_url = (self.ertipay_base_url or 'https://payin.ertipay.com').rstrip('/')
+        environment_path = 'prod' if self.state == 'enabled' else 'uat'
+        if base_url.endswith('/uat') or base_url.endswith('/prod'):
+            base_url = base_url.rsplit('/', 1)[0]
+        return '%s/%s' % (base_url, environment_path)
+
+    def _ertipay_mask_sensitive(self, value):
+        if not value:
+            return value
+        value = str(value)
+        if len(value) <= 8:
+            return '****'
+        return '%s****%s' % (value[:4], value[-4:])
+
+    def _ertipay_sanitized_payload(self, payload):
+        if isinstance(payload, dict):
+            sanitized = {}
+            for key, value in payload.items():
+                if key in ('apiPayinApiSecret', 'Authorization') and value:
+                    sanitized[key] = self._ertipay_mask_sensitive(value)
+                else:
+                    sanitized[key] = self._ertipay_sanitized_payload(value)
+            return sanitized
+        if isinstance(payload, list):
+            return [self._ertipay_sanitized_payload(item) for item in payload]
+        return payload
+
+    def _ertipay_log_api(self, message, *args):
+        self.ensure_one()
+        _logger.warning('[Ertipay] ' + message, *args)
 
     def _ertipay_headers(self, authenticated=True):
         self.ensure_one()
@@ -78,6 +120,7 @@ class PaymentProvider(models.Model):
         self.ensure_one()
         missing = []
         for field_name, label in [
+            ('ertipay_base_url', _('API Base URL')),
             ('ertipay_merchant_id', _('Merchant ID')),
             ('ertipay_email', _('Pay-In Email')),
             ('ertipay_api_secret', _('Pay-In API Secret')),
@@ -94,6 +137,7 @@ class PaymentProvider(models.Model):
         self._ertipay_validate_configuration()
         refresh_at = fields.Datetime.now() + timedelta(minutes=5)
         if self.ertipay_token and self.ertipay_token_expiry and self.ertipay_token_expiry > refresh_at:
+            self._ertipay_log_api('Using cached bearer token expiring at %s: %s', self.ertipay_token_expiry, self.ertipay_token)
             return self.ertipay_token
 
         endpoint = '%s/token' % self._ertipay_get_base_url()
@@ -101,19 +145,37 @@ class PaymentProvider(models.Model):
             'email': self.ertipay_email,
             'apiPayinApiSecret': self.ertipay_api_secret,
         }
-        response = requests.post(endpoint, headers=self._ertipay_headers(authenticated=False), json=payload, timeout=30)
+        self._ertipay_log_api('Token request endpoint: %s', endpoint)
+        self._ertipay_log_api('Token request payload: %s', self._ertipay_sanitized_payload(payload))
+        try:
+            response = requests.post(endpoint, headers=self._ertipay_headers(authenticated=False), json=payload, timeout=30)
+        except requests.exceptions.RequestException as error:
+            _logger.exception('[Ertipay] Token request failed before receiving a response from %s', endpoint)
+            raise UserError(_('Ertipay token request failed before receiving a response: %s') % error) from error
+        self._ertipay_log_api('Token response status: %s', response.status_code)
         response.raise_for_status()
         body = response.json()
-        if not body.get('success') or not body.get('data', {}).get('token'):
+        self._ertipay_log_api('Token response body: %s', self._ertipay_sanitized_payload(body))
+        if not body.get('success'):
             raise UserError(_('Ertipay token generation failed: %s') % (body.get('message') or body))
 
-        data = body['data']
-        expires_in = int(data.get('expiresInSeconds') or 3600)
+        data = body.get('data') or {}
+        encrypted_data = data.get('encryptedData')
+        if encrypted_data:
+            decrypted_body = self._ertipay_decrypt(encrypted_data)
+            self._ertipay_log_api('Token decrypted response body: %s', self._ertipay_sanitized_payload(decrypted_body))
+            data = decrypted_body.get('data') or decrypted_body
+
+        token = data.get('token') or data.get('jwtToken') or data.get('accessToken') or data.get('bearerToken')
+        if not token:
+            raise UserError(_('Ertipay token generation did not return a bearer token: %s') % self._ertipay_sanitized_payload(data))
+
+        expires_in = int(data.get('expiresInSeconds') or data.get('expiresIn') or 3600)
         self.sudo().write({
-            'ertipay_token': data['token'],
+            'ertipay_token': token,
             'ertipay_token_expiry': fields.Datetime.now() + timedelta(seconds=max(expires_in - 60, 60)),
         })
-        return data['token']
+        return token
 
     def _ertipay_run_openssl(self, payload, key_hex, iv_hex, decrypt=False):
         command = ['openssl', 'enc', '-aes-128-cbc', '-K', key_hex, '-iv', iv_hex]
