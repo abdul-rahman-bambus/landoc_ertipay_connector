@@ -155,16 +155,26 @@ class PaymentProvider(models.Model):
         response.raise_for_status()
         body = response.json()
         self._ertipay_log_api('Token response body: %s', self._ertipay_sanitized_payload(body))
-        if not body.get('success') or not body.get('data', {}).get('token'):
+        if not body.get('success'):
             raise UserError(_('Ertipay token generation failed: %s') % (body.get('message') or body))
 
-        data = body['data']
-        expires_in = int(data.get('expiresInSeconds') or 3600)
+        data = body.get('data') or {}
+        encrypted_data = data.get('encryptedData')
+        if encrypted_data:
+            decrypted_body = self._ertipay_decrypt(encrypted_data)
+            self._ertipay_log_api('Token decrypted response body: %s', self._ertipay_sanitized_payload(decrypted_body))
+            data = decrypted_body.get('data') or decrypted_body
+
+        token = data.get('token') or data.get('jwtToken') or data.get('accessToken') or data.get('bearerToken')
+        if not token:
+            raise UserError(_('Ertipay token generation did not return a bearer token: %s') % self._ertipay_sanitized_payload(data))
+
+        expires_in = int(data.get('expiresInSeconds') or data.get('expiresIn') or 3600)
         self.sudo().write({
-            'ertipay_token': data['token'],
+            'ertipay_token': token,
             'ertipay_token_expiry': fields.Datetime.now() + timedelta(seconds=max(expires_in - 60, 60)),
         })
-        return data['token']
+        return token
 
     def _ertipay_run_openssl(self, payload, key_hex, iv_hex, decrypt=False):
         command = ['openssl', 'enc', '-aes-128-cbc', '-K', key_hex, '-iv', iv_hex]
