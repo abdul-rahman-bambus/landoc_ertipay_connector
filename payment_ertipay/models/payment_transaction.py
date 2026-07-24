@@ -54,7 +54,7 @@ class PaymentTransaction(models.Model):
         self.ensure_one()
         provider = self.provider_id
         base_url = self.get_base_url()
-        txn_ref_id = self.ertipay_txn_ref_id or self._ertipay_get_txn_ref_id()
+        txn_ref_id = self._ertipay_get_txn_ref_id()
         provider._ertipay_log_api('Creating UPI payment for transaction %s with Ertipay txnRefId %s and amount %s', self.reference, txn_ref_id, self.amount)
         payload = {
             'type': provider.ertipay_channel_type or 'MOB',
@@ -101,7 +101,7 @@ class PaymentTransaction(models.Model):
     def _ertipay_fetch_status(self):
         self.ensure_one()
         provider = self.provider_id
-        txn_ref_id = self.ertipay_txn_ref_id or self._ertipay_get_txn_ref_id()
+        txn_ref_id = self._ertipay_get_txn_ref_id()
         endpoint = '%s/status/%s' % (provider._ertipay_get_base_url(), txn_ref_id)
         provider._ertipay_log_api('Status request endpoint: %s', endpoint)
         try:
@@ -131,6 +131,10 @@ class PaymentTransaction(models.Model):
             ('reference', '=', reference),
             ('ertipay_txn_ref_id', '=', reference),
         ])
+        if not tx:
+            tx = self.search([('provider_code', '=', 'ertipay')]).filtered(
+                lambda transaction: transaction._ertipay_get_txn_ref_id() == reference
+            )
         if not tx:
             raise ValidationError(_('No Ertipay transaction found for reference %s.') % reference)
         return tx
