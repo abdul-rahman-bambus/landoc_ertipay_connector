@@ -1,4 +1,5 @@
 import logging
+import re
 
 import requests
 
@@ -12,6 +13,7 @@ class PaymentTransaction(models.Model):
     _inherit = 'payment.transaction'
 
     ertipay_txn_id = fields.Char(string='Ertipay Transaction ID', readonly=True, copy=False)
+    ertipay_txn_ref_id = fields.Char(string='Ertipay Transaction Reference', readonly=True, copy=False)
     ertipay_intent_link = fields.Char(string='Ertipay UPI Intent Link', readonly=True, copy=False)
 
     def _get_specific_processing_values(self, processing_values):
@@ -44,18 +46,23 @@ class PaymentTransaction(models.Model):
             'reference': self.reference,
         }
 
+    def _ertipay_get_txn_ref_id(self):
+        self.ensure_one()
+        return re.sub(r'[^A-Za-z0-9]', '', self.reference or '')
+
     def _ertipay_create_upi_payment(self):
         self.ensure_one()
         provider = self.provider_id
         base_url = self.get_base_url()
-        provider._ertipay_log_api('Creating UPI payment for transaction %s with amount %s', self.reference, self.amount)
+        txn_ref_id = self.ertipay_txn_ref_id or self._ertipay_get_txn_ref_id()
+        provider._ertipay_log_api('Creating UPI payment for transaction %s with Ertipay txnRefId %s and amount %s', self.reference, txn_ref_id, self.amount)
         payload = {
             'type': provider.ertipay_channel_type or 'MOB',
             'vpa': provider.ertipay_vpa,
             'initMode': provider.ertipay_init_mode or '04',
-            'txnRefId': self.reference,
+            'txnRefId': txn_ref_id,
             'txnAmt': '%.2f' % self.amount,
-            'txnRemarks': self.reference,
+            'txnRemarks': txn_ref_id,
             'refUrl': '%s/payment/ertipay/return' % base_url.rstrip('/'),
         }
         provider._ertipay_log_api('UPI plain request payload before encryption: %s', payload)
@@ -84,6 +91,7 @@ class PaymentTransaction(models.Model):
         self.write({
             'provider_reference': payment_data.get('txnId') or self.provider_reference,
             'ertipay_txn_id': payment_data.get('txnId'),
+            'ertipay_txn_ref_id': txn_ref_id,
             'ertipay_intent_link': payment_data.get('intentLink') or payment_data.get('qrUrl'),
         })
         if not self.ertipay_intent_link:
@@ -93,7 +101,8 @@ class PaymentTransaction(models.Model):
     def _ertipay_fetch_status(self):
         self.ensure_one()
         provider = self.provider_id
-        endpoint = '%s/status/%s' % (provider._ertipay_get_base_url(), self.reference)
+        txn_ref_id = self.ertipay_txn_ref_id or self._ertipay_get_txn_ref_id()
+        endpoint = '%s/status/%s' % (provider._ertipay_get_base_url(), txn_ref_id)
         provider._ertipay_log_api('Status request endpoint: %s', endpoint)
         try:
             response = requests.get(endpoint, headers=provider._ertipay_headers(), timeout=30)
@@ -116,7 +125,12 @@ class PaymentTransaction(models.Model):
         reference = notification_data.get('txnRefId') or notification_data.get('reference')
         if not reference:
             raise ValidationError(_('Ertipay notification does not contain a transaction reference.'))
-        tx = self.search([('reference', '=', reference), ('provider_code', '=', 'ertipay')])
+        tx = self.search([
+            ('provider_code', '=', 'ertipay'),
+            '|',
+            ('reference', '=', reference),
+            ('ertipay_txn_ref_id', '=', reference),
+        ])
         if not tx:
             raise ValidationError(_('No Ertipay transaction found for reference %s.') % reference)
         return tx
