@@ -5,8 +5,16 @@
             <div class="container py-5 text-center">
                 <h2>Complete your payment with Ertipay UPI</h2>
                 <t t-if="intent_link and intent_link.startswith('upi:')">
-                    <p class="text-muted">Use the button below to open your UPI application and complete the payment.</p>
-                    <a t-att-href="intent_link" class="btn btn-primary btn-lg my-3">Pay with UPI</a>
+                    <p class="text-muted">Opening your UPI application. If it does not open automatically, use the button below.</p>
+                    <a id="ertipay_upi_intent" t-att-href="intent_link" class="btn btn-primary btn-lg my-3">Open UPI App</a>
+                    <script type="text/javascript">
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const upiIntent = document.getElementById('ertipay_upi_intent');
+                            if (upiIntent) {
+                                window.location.href = upiIntent.href;
+                            }
+                        });
+                    </script>
                 </t>
                 <t t-elif="intent_link and intent_link.startswith('http')">
                     <p class="text-muted">Scan this QR code with any UPI app to complete the payment.</p>

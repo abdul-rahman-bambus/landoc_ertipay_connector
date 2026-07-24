@@ -155,6 +155,10 @@ class PaymentTransaction(models.Model):
                 lambda transaction: transaction._ertipay_get_txn_ref_id() == reference
             )
         if not tx:
+            tx = self.search([('provider_code', '=', 'ertipay')]).filtered(
+                lambda transaction: transaction._ertipay_get_txn_ref_id() == reference
+            )
+        if not tx:
             raise ValidationError(_('No Ertipay transaction found for reference %s.') % reference)
         return tx
 
