@@ -13,6 +13,7 @@ class PaymentTransaction(models.Model):
     _inherit = 'payment.transaction'
 
     ertipay_txn_id = fields.Char(string='Ertipay Transaction ID', readonly=True, copy=False)
+    ertipay_txn_ref_id = fields.Char(string='Ertipay Transaction Reference', readonly=True, copy=False)
     ertipay_intent_link = fields.Char(string='Ertipay UPI Intent Link', readonly=True, copy=False)
 
     def _get_specific_processing_values(self, processing_values):
@@ -91,6 +92,7 @@ class PaymentTransaction(models.Model):
         self.write({
             'provider_reference': payment_data.get('txnId') or self.provider_reference,
             'ertipay_txn_id': payment_data.get('txnId'),
+            'ertipay_txn_ref_id': txn_ref_id,
             'ertipay_intent_link': payment_data.get('intentLink') or payment_data.get('qrUrl'),
         })
         if not self.ertipay_intent_link:
@@ -126,7 +128,32 @@ class PaymentTransaction(models.Model):
         reference = notification_data.get('txnRefId') or notification_data.get('reference')
         if not reference:
             raise ValidationError(_('Ertipay notification does not contain a transaction reference.'))
-        tx = self.search([('reference', '=', reference), ('provider_code', '=', 'ertipay')])
+        tx = self.search([
+            ('provider_code', '=', 'ertipay'),
+            '|',
+            ('reference', '=', reference),
+            ('ertipay_txn_ref_id', '=', reference),
+        ])
+        if not tx:
+            tx = self.search([('provider_code', '=', 'ertipay')]).filtered(
+                lambda transaction: transaction._ertipay_get_txn_ref_id() == reference
+            )
+        if not tx:
+            tx = self.search([('provider_code', '=', 'ertipay')]).filtered(
+                lambda transaction: transaction._ertipay_get_txn_ref_id() == reference
+            )
+        if not tx:
+            tx = self.search([('provider_code', '=', 'ertipay')]).filtered(
+                lambda transaction: transaction._ertipay_get_txn_ref_id() == reference
+            )
+        if not tx:
+            tx = self.search([('provider_code', '=', 'ertipay')]).filtered(
+                lambda transaction: transaction._ertipay_get_txn_ref_id() == reference
+            )
+        if not tx:
+            tx = self.search([('provider_code', '=', 'ertipay')]).filtered(
+                lambda transaction: transaction._ertipay_get_txn_ref_id() == reference
+            )
         if not tx:
             tx = self.search([('provider_code', '=', 'ertipay')]).filtered(
                 lambda transaction: transaction._ertipay_get_txn_ref_id() == reference
