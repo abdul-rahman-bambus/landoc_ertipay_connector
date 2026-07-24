@@ -14,14 +14,31 @@ class PaymentTransaction(models.Model):
     ertipay_txn_id = fields.Char(string='Ertipay Transaction ID', readonly=True, copy=False)
     ertipay_intent_link = fields.Char(string='Ertipay UPI Intent Link', readonly=True, copy=False)
 
+    def _get_specific_processing_values(self, processing_values):
+        res = super()._get_specific_processing_values(processing_values)
+        if self.provider_code != 'ertipay':
+            return res
+        self.ensure_one()
+        _logger.warning('[Ertipay] Building processing values for transaction %s with values: %s', self.reference, processing_values)
+        if not self.ertipay_intent_link:
+            self._ertipay_create_upi_payment()
+        return {
+            **res,
+            'api_url': '/payment/ertipay/redirect',
+            'intent_link': self.ertipay_intent_link,
+            'reference': self.reference,
+        }
+
     def _get_specific_rendering_values(self, processing_values):
         res = super()._get_specific_rendering_values(processing_values)
         if self.provider_code != 'ertipay':
             return res
         self.ensure_one()
-        _logger.warning('[Ertipay] Building rendering values for transaction %s', self.reference)
-        self._ertipay_create_upi_payment()
+        _logger.warning('[Ertipay] Building rendering values for transaction %s with values: %s', self.reference, processing_values)
+        if not self.ertipay_intent_link:
+            self._ertipay_create_upi_payment()
         return {
+            **res,
             'api_url': '/payment/ertipay/redirect',
             'intent_link': self.ertipay_intent_link,
             'reference': self.reference,
