@@ -14,13 +14,31 @@ class PaymentTransaction(models.Model):
     ertipay_txn_id = fields.Char(string='Ertipay Transaction ID', readonly=True, copy=False)
     ertipay_intent_link = fields.Char(string='Ertipay UPI Intent Link', readonly=True, copy=False)
 
+    def _get_specific_processing_values(self, processing_values):
+        res = super()._get_specific_processing_values(processing_values)
+        if self.provider_code != 'ertipay':
+            return res
+        self.ensure_one()
+        _logger.warning('[Ertipay] Building processing values for transaction %s with values: %s', self.reference, processing_values)
+        if not self.ertipay_intent_link:
+            self._ertipay_create_upi_payment()
+        return {
+            **res,
+            'api_url': '/payment/ertipay/redirect',
+            'intent_link': self.ertipay_intent_link,
+            'reference': self.reference,
+        }
+
     def _get_specific_rendering_values(self, processing_values):
         res = super()._get_specific_rendering_values(processing_values)
         if self.provider_code != 'ertipay':
             return res
         self.ensure_one()
-        self._ertipay_create_upi_payment()
+        _logger.warning('[Ertipay] Building rendering values for transaction %s with values: %s', self.reference, processing_values)
+        if not self.ertipay_intent_link:
+            self._ertipay_create_upi_payment()
         return {
+            **res,
             'api_url': '/payment/ertipay/redirect',
             'intent_link': self.ertipay_intent_link,
             'reference': self.reference,
@@ -30,6 +48,7 @@ class PaymentTransaction(models.Model):
         self.ensure_one()
         provider = self.provider_id
         base_url = self.get_base_url()
+        provider._ertipay_log_api('Creating UPI payment for transaction %s with amount %s', self.reference, self.amount)
         payload = {
             'type': provider.ertipay_channel_type or 'MOB',
             'vpa': provider.ertipay_vpa,
@@ -39,11 +58,21 @@ class PaymentTransaction(models.Model):
             'txnRemarks': self.reference,
             'refUrl': '%s/payment/ertipay/return' % base_url.rstrip('/'),
         }
+        provider._ertipay_log_api('UPI plain request payload before encryption: %s', payload)
         encrypted_payload = provider._ertipay_encrypt(payload)
+        request_payload = {'data': encrypted_payload}
         endpoint = '%s/upi' % provider._ertipay_get_base_url()
-        response = requests.post(endpoint, headers=provider._ertipay_headers(), json={'data': encrypted_payload}, timeout=30)
+        provider._ertipay_log_api('UPI request endpoint: %s', endpoint)
+        provider._ertipay_log_api('UPI encrypted request payload: %s', request_payload)
+        try:
+            response = requests.post(endpoint, headers=provider._ertipay_headers(), json=request_payload, timeout=30)
+        except requests.exceptions.RequestException as error:
+            _logger.exception('[Ertipay] UPI request failed before receiving a response from %s', endpoint)
+            raise UserError(_('Ertipay UPI request failed before receiving a response: %s') % error) from error
+        provider._ertipay_log_api('UPI response status: %s', response.status_code)
         response.raise_for_status()
         body = response.json()
+        provider._ertipay_log_api('UPI response body: %s', body)
         if not body.get('success'):
             raise UserError(_('Ertipay UPI payment creation failed: %s') % (body.get('message') or body))
 
@@ -65,9 +94,16 @@ class PaymentTransaction(models.Model):
         self.ensure_one()
         provider = self.provider_id
         endpoint = '%s/status/%s' % (provider._ertipay_get_base_url(), self.reference)
-        response = requests.get(endpoint, headers=provider._ertipay_headers(), timeout=30)
+        provider._ertipay_log_api('Status request endpoint: %s', endpoint)
+        try:
+            response = requests.get(endpoint, headers=provider._ertipay_headers(), timeout=30)
+        except requests.exceptions.RequestException as error:
+            _logger.exception('[Ertipay] Status request failed before receiving a response from %s', endpoint)
+            raise UserError(_('Ertipay status request failed before receiving a response: %s') % error) from error
+        provider._ertipay_log_api('Status response status: %s', response.status_code)
         response.raise_for_status()
         body = response.json()
+        provider._ertipay_log_api('Status response body: %s', body)
         encrypted_data = body.get('data', {}).get('encryptedData')
         if encrypted_data:
             return provider._ertipay_decrypt(encrypted_data)
