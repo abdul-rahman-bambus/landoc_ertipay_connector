@@ -2,6 +2,8 @@ import logging
 import re
 
 import requests
+from decimal import Decimal, ROUND_HALF_UP
+
 
 from odoo import _, fields, models
 from odoo.exceptions import UserError, ValidationError
@@ -15,6 +17,28 @@ class PaymentTransaction(models.Model):
     ertipay_txn_id = fields.Char(string='Ertipay Transaction ID', readonly=True, copy=False)
     ertipay_txn_ref_id = fields.Char(string='Ertipay Transaction Reference', readonly=True, copy=False)
     ertipay_intent_link = fields.Char(string='Ertipay UPI Intent Link', readonly=True, copy=False)
+
+    # Extended fields for transaction fee, gst on trn fee.
+    ertipay_transaction_fee = fields.Monetary(
+        string="Transaction Fee",
+        currency_field="currency_id",
+    )
+
+    ertipay_gst = fields.Monetary(
+        string="GST",
+        currency_field="currency_id",
+    )
+
+    ertipay_total_paid = fields.Monetary(
+        string="Total Paid",
+        currency_field="currency_id",
+    )
+
+    ertipay_session_id = fields.Char()
+
+    ertipay_payment_reference = fields.Char()
+
+    ertipay_raw_response = fields.Json()
 
     def _get_specific_processing_values(self, processing_values):
         res = super()._get_specific_processing_values(processing_values)
@@ -55,13 +79,14 @@ class PaymentTransaction(models.Model):
         provider = self.provider_id
         base_url = self.get_base_url()
         txn_ref_id = self._ertipay_get_txn_ref_id()
-        provider._ertipay_log_api('Creating UPI payment for transaction %s with Ertipay txnRefId %s and amount %s', self.reference, txn_ref_id, self.amount)
+        total = self._calculate_gateway_charges()
+        provider._ertipay_log_api('Creating UPI payment for transaction %s with Ertipay txnRefId %s and amount %s', self.reference, txn_ref_id, total["total"])
         payload = {
             'type': provider.ertipay_channel_type or 'MOB',
             'vpa': provider.ertipay_vpa,
             'initMode': provider.ertipay_init_mode or '04',
             'txnRefId': txn_ref_id,
-            'txnAmt': '%.2f' % self.amount,
+            'txnAmt': '%.2f' % total["total"],
             'txnRemarks': 'Payment',
             'refUrl': '%s/payment/ertipay/return' % base_url.rstrip('/'),
         }
@@ -166,15 +191,145 @@ class PaymentTransaction(models.Model):
         super()._process_notification_data(notification_data)
         if self.provider_code != 'ertipay':
             return
+        self.ensure_one()
+        self._process_ertipay_payment(notification_data)
+
+        # status = notification_data.get('status') or notification_data.get('orgStatus')
+        # provider_reference = notification_data.get('txnId') or notification_data.get('rrn') or self.provider_reference
+        # if provider_reference:
+        #     self.provider_reference = provider_reference
+        # if status == 'S':
+        #     self._set_done()
+        # elif status == 'D':
+        #     self._set_pending(state_message=_('Ertipay returned deemed success; waiting for final confirmation.'))
+        # elif status == 'F':
+        #     self._set_error(_('Ertipay reported payment failure.'))
+        # else:
+        #     self._set_pending(state_message=_('Waiting for Ertipay payment confirmation.'))
+
+    def _process_ertipay_payment(self, notification_data):
+        """Handle Ertipay payment completion."""
+
         status = notification_data.get('status') or notification_data.get('orgStatus')
-        provider_reference = notification_data.get('txnId') or notification_data.get('rrn') or self.provider_reference
+
+        provider_reference = (
+                notification_data.get('txnId')
+                or notification_data.get('rrn')
+                or self.provider_reference
+        )
+
         if provider_reference:
             self.provider_reference = provider_reference
+
         if status == 'S':
             self._set_done()
+
+            # Save payment details
+            self._save_ertipay_payment_details(notification_data)
+
         elif status == 'D':
-            self._set_pending(state_message=_('Ertipay returned deemed success; waiting for final confirmation.'))
+            self._set_pending(
+                state_message=_(
+                    'Ertipay returned deemed success; waiting for final confirmation.'
+                )
+            )
+
         elif status == 'F':
-            self._set_error(_('Ertipay reported payment failure.'))
+            self._set_error(
+                _('Ertipay reported payment failure.')
+            )
+
         else:
-            self._set_pending(state_message=_('Waiting for Ertipay payment confirmation.'))
+            self._set_pending(
+                state_message=_(
+                    'Waiting for Ertipay payment confirmation.'
+                )
+            )
+
+    def _calculate_gateway_charges(self):
+        """Calculate Ertipay transaction fee, GST, and total payable."""
+
+        self.ensure_one()
+
+        amount = Decimal(str(self.amount))
+        trn_percentage = Decimal(str(self.provider_id.trn_percentage or 0.0))
+        gst_percentage = Decimal(str(self.provider_id.trn_tax_percentage or 18.0))
+
+        transaction_fee = (
+                amount * trn_percentage / Decimal("100")
+        ).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
+        )
+
+        gst = (
+                transaction_fee * gst_percentage / Decimal("100")
+        ).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
+        )
+
+        total = (
+                amount + transaction_fee + gst
+        ).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
+        )
+
+        return {
+            'amount': amount,
+            'transaction_fee': transaction_fee,
+            'gst': gst,
+            'total': total,
+        }
+
+    def _save_ertipay_payment_details(self, notification_data):
+        self.ensure_one()
+
+        values = self._calculate_gateway_charges()
+
+        self.write({
+            'ertipay_transaction_fee': float(values['transaction_fee']),
+            'ertipay_gst': float(values['gst']),
+            'ertipay_total_paid': float(values['total']),
+            'ertipay_session_id': notification_data.get('sessionId'),
+            'ertipay_payment_reference': (
+                    notification_data.get('txnId')
+                    or notification_data.get('rrn')
+            ),
+            'ertipay_raw_response': notification_data,
+        })
+
+        self._update_invoice_ertipay_information()
+
+    def _update_invoice_ertipay_information(self):
+        """Copy Ertipay information to generated invoice."""
+
+        self.ensure_one()
+
+        invoices = self.invoice_ids.filtered(
+            lambda inv: inv.state != 'cancel'
+        )
+
+        if not invoices:
+            return
+
+        values = {
+            'payment_transaction_id': self.id,
+            'ertipay_transaction_fee':
+                self.ertipay_transaction_fee,
+
+            'ertipay_gst':
+                self.ertipay_gst,
+
+            'ertipay_total_paid':
+                self.ertipay_total_paid,
+
+            'ertipay_session_id':
+                self.ertipay_session_id,
+            'ertipay_payment_reference': self.ertipay_payment_reference,
+        }
+
+        invoices.write(values)
+
+

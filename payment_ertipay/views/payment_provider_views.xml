@@ -21,6 +21,25 @@
                     <field name="ertipay_debug_logging"/>
                 </group>
             </xpath>
+            <xpath expr="//page[@name='configuration']" position="before">
+                <page string="Transaction Charges">
+                    <group>
+                        <group>
+                            <field name="is_trn_charges_applied"/>
+                            <label for="trn_percentage"/>
+                            <div id="trn_percentage">
+                                <field name="trn_percentage" invisible="not is_trn_charges_applied"  style="width: 5rem"/>%
+                            </div>
+
+                            <label for="trn_tax_percentage"/>
+                            <div id="trn_tax_percentage">
+                                <field name="trn_tax_percentage" invisible="not is_trn_charges_applied"  style="width: 5rem"/>%
+                            </div>
+                        </group>
+                    </group>
+
+                </page>
+            </xpath>
         </field>
     </record>
 </odoo>

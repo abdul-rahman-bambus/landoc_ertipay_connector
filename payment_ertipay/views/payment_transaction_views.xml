@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="payment_transaction_form_ertipay" model="ir.ui.view">
+        <field name="name">payment.transaction.form.ertipay</field>
+        <field name="model">payment.transaction</field>
+        <field name="inherit_id" ref="payment.payment_transaction_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <notebook>
+                    <page string="Ertipay">
+                        <group>
+                            <group>
+                                <field name="ertipay_txn_id"/>
+                                <field name="ertipay_txn_ref_id"/>
+                                <field name="ertipay_intent_link"/>
+                                <field name="ertipay_transaction_fee"/>
+                                <field name="ertipay_gst"/>
+                                <field name="ertipay_total_paid"/>
+                                <field name="ertipay_session_id"/>
+                                <field name="ertipay_payment_reference"/>
+                                <field name="ertipay_raw_response"/>
+                            </group>
+                        </group>
+
+                    </page>
+                </notebook>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

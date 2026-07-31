@@ -248,7 +248,7 @@ class CrmLead(models.Model):
 
         services = {
             religion: service_ids.filtered(lambda s: s.religion == religion)
-            for religion in ['special', 'christian', 'muslim', 'hindu', 'tamilnadu']
+            for religion in ['special', 'christian', 'muslim', 'hindu', 'hindu_tn_marriage_both', 'tamilnadu']
         }
 
         cutoff_date = date(2009, 11, 23)
@@ -281,7 +281,7 @@ class CrmLead(models.Model):
             if marriage_type == 'hindu':
                 if lead.date_of_marriage and lead.date_of_marriage > cutoff_date:
                     lead.marriage_service_ids = (
-                            services['hindu'] | services['tamilnadu']
+                            services['hindu'] | services['tamilnadu'] | services['hindu_tn_marriage_both']
                     )
                 else:
                     lead.marriage_service_ids = services['hindu']
@@ -847,37 +847,71 @@ class CrmLead(models.Model):
 
     def _prepare_opportunity_quotation_context(self):
         result = super()._prepare_opportunity_quotation_context()
+
         order_lines = []
-        landoc_fees_obj = self.env['landoc.fees'].search([('service_id', '=', self.service_id.id)])
 
-        # Additional Year Calculation
-        vendor_rate = 0
-        for vendor_fees in landoc_fees_obj.vendor_fees_line:
-            vendor_rate += self.ec_additional_year_amount if vendor_fees.ec_vendor_fee_category == 'search_fee_additional_year' else vendor_fees.rate
-        for line in landoc_fees_obj.customer_fees_line:
-            order_line_dict = {'product_id': line.product_id.id, 'price_unit': line.rate, 'product_uom_qty': 1, 'landoc_fee_line_id':line.id,
-                                       'analytic_distribution': {self.analytic_account_id.id: 100}}
-            if self.is_ec:
-                order_line_dict.update({'price_unit': vendor_rate if line.ec_customer_fee_category == 'govt_fees' else line.rate, 'product_uom_qty': self.ec_no_of_survey if line.ec_customer_fee_category == 'govt_fees' else 1})
+        landoc_fees = self.env['landoc.fees'].search([
+            ('service_id', '=', self.service_id.id)
+        ], limit=1)
 
-            if self.is_marriage_registation:
-                current_date = date.today()
-                extra_fee = 0
-                if self.date_of_marriage and self.date_of_marriage < current_date:
-                    delta = abs(self.date_of_marriage - current_date)
-                    if delta.days > 150:
-                        extra_fee = self.service_id.fees_above_one_hundred_fifty
-                    elif delta.days > 90:
-                        extra_fee = self.service_id.fees_above_ninety
+        # ---------------------------------------------------------
+        # Calculate Vendor Rate (EC)
+        # ---------------------------------------------------------
+        vendor_rate = sum(
+            self.ec_additional_year_amount
+            if vendor_fee.ec_vendor_fee_category == 'search_fee_additional_year'
+            else vendor_fee.rate
+            for vendor_fee in landoc_fees.vendor_fees_line
+        )
 
-                order_line_dict.update({'price_unit': line.rate + extra_fee if extra_fee else line.rate,})
+        # ---------------------------------------------------------
+        # Calculate Marriage Extra Fee (Only Once)
+        # ---------------------------------------------------------
+        extra_fee = 0
 
-            order_lines.append((0, 0, order_line_dict))
-            # order_lines.append((0, 0, {'product_id': line.product_id.id, 'price_unit': vendor_rate if line.ec_customer_fee_category == 'govt_fees' else line.rate, 'product_uom_qty': self.ec_no_of_survey if line.ec_customer_fee_category == 'govt_fees' else 1,
-            #                            'analytic_distribution': {self.analytic_account_id.id: 100}}))
+        if self.is_marriage_registation and self.date_of_marriage:
+            delta_days = abs((date.today() - self.date_of_marriage).days)
+
+            if delta_days > 150:
+                extra_fee = self.service_id.fees_above_one_hundred_fifty
+            elif delta_days > 90:
+                extra_fee = self.service_id.fees_above_ninety
+
+        # ---------------------------------------------------------
+        # Prepare Sale Order Lines
+        # ---------------------------------------------------------
+        for index, line in enumerate(landoc_fees.customer_fees_line):
+
+            price_unit = line.rate
+            quantity = 1
+
+            # EC Calculation
+            if self.is_ec and line.ec_customer_fee_category == 'govt_fees':
+                price_unit = vendor_rate
+                quantity = self.ec_no_of_survey
+
+            # Marriage Registration
+            elif self.is_marriage_registation and index == 0:
+                price_unit += extra_fee
+
+            order_lines.append((
+                0,
+                0,
+                {
+                    'product_id': line.product_id.id,
+                    'price_unit': price_unit,
+                    'product_uom_qty': quantity,
+                    'landoc_fee_line_id': line.id,
+                    'analytic_distribution': {
+                        self.analytic_account_id.id: 100
+                    },
+                }
+            ))
+
         result.update({
             'default_order_line': order_lines,
         })
+
         return result
 
     def _create_customer(self):

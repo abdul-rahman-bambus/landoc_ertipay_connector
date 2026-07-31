@@ -2,7 +2,7 @@
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, date
 
 from odoo import http, fields
 from odoo.http import request, Response
@@ -704,78 +704,106 @@ class CRMWebhookController(http.Controller):
                     "success": False,
                     "message": "Customer fee line not configured",
                     "service_code": service_code,
-                    "service_name": service.name
+                    "service_name": service.name,
                 }
 
-            base_fee = 0.0
-            fee_breakup = []
-
-            for line in fee_lines:
-                rate = float(line.rate or 0.0)
-                tax_excluded_amount = float(line.tax_excluded_amount or 0.0)
-
-                if rate <= 0:
-                    continue
-
-                label = ''
-                if hasattr(line, 'product_id') and line.product_id:
-                    label = line.product_id.display_name
-                elif hasattr(line, 'name') and line.name:
-                    label = line.name
-                else:
-                    label = 'LANDOC service fee'
-
-                base_fee += rate
-
-                fee_breakup.append({
-                    "label": label,
-                    "tax_excluded_amount": tax_excluded_amount,
-                    "amount": rate
-                })
-
-            if base_fee <= 0:
-                return {
-                    "success": False,
-                    "message": "Valid base fee not found",
-                    "service_code": service_code,
-                    "service_name": service.name
-                }
-
+            # ----------------------------------------------------------
+            # Calculate Late Fee
+            # ----------------------------------------------------------
             late_fee = 0.0
 
             if marriage_age_days > 150:
-                if hasattr(service, 'fees_above_one_hundred_fifty'):
-                    late_fee = float(service.fees_above_one_hundred_fifty or 0.0)
-                elif hasattr(service, 'fees_above_150'):
-                    late_fee = float(service.fees_above_150 or 0.0)
-                else:
-                    late_fee = 0.0
+                late_fee = float(
+                    getattr(service, 'fees_above_one_hundred_fifty', 0.0)
+                    or getattr(service, 'fees_above_150', 0.0)
+                    or 0.0
+                )
 
-            total_amount = base_fee + late_fee
+            fee_breakup = []
+            grand_total = 0.0
 
-            # Your requirement: response can show only LANDOC service fee as final total.
-            final_breakup = [
-                {
-                    "label": "LANDOC service fee",
-                    "amount": total_amount
-                }
-            ]
+            for index, line in enumerate(fee_lines):
+
+                if line.rate <= 0:
+                    continue
+
+                label = (
+                    line.product_id.display_name
+                    if line.product_id
+                    else getattr(line, 'name', 'LANDOC Service Fee')
+                )
+
+                # ----------------------------------------------------------
+                # Apply late fee only once (first fee line)
+                # ----------------------------------------------------------
+                price = float(line.rate)
+
+                additional_rate = 0.0
+                if index == 0 and late_fee:
+                    price += late_fee
+                    additional_rate = late_fee
+
+                taxes = line.tax_ids.compute_all(
+                    price,
+                    currency=line.currency_id,
+                    quantity=1.0,
+                )
+
+                untaxed_amount = taxes['total_excluded']
+                total_amount = taxes['total_included']
+                tax_amount = total_amount - untaxed_amount
+
+                sgst = 0.0
+                cgst = 0.0
+                igst = 0.0
+                tax_percentage = 0.0
+
+                for tax in taxes['taxes']:
+                    tax_rec = request.env['account.tax'].browse(tax['id'])
+
+                    tax_percentage += tax_rec.amount
+
+                    if 'SGST' in tax_rec.name.upper():
+                        sgst += tax['amount']
+
+                    elif 'CGST' in tax_rec.name.upper():
+                        cgst += tax['amount']
+
+                    elif 'IGST' in tax_rec.name.upper():
+                        igst += tax['amount']
+
+                grand_total += total_amount
+
+                fee_breakup.append({
+                    "label": label,
+                    "is_tax_applied": bool(line.tax_ids),
+                    "tax_percentage": tax_percentage,
+                    "untaxed_amount": round(untaxed_amount, 2),
+                    "additional_rate": round(additional_rate, 2),
+                    "tax_amount": round(tax_amount, 2),
+                    "total_amount": round(total_amount, 2),
+                    "sgst": round(sgst, 2),
+                    "cgst": round(cgst, 2),
+                    "igst": round(igst, 2),
+                })
 
             return {
                 "success": True,
                 "service_code": service.code,
                 "service_name": service.name,
-                "total_amount": total_amount,
                 "currency": "INR",
-                "fee_breakup": final_breakup
+                "late_fee": round(late_fee, 2),
+                "total_amount": round(grand_total, 2),
+                "fee_breakup": fee_breakup,
             }
-
         except Exception as e:
             _logger.exception("LANDOC: Failed to calculate service fee")
             return {
                 "success": False,
                 "message": str(e)
             }
+
+
 
     @http.route(
         '/api/v1/crm/remaining/payment',
@@ -790,86 +818,247 @@ class CRMWebhookController(http.Controller):
             return auth_error
 
         try:
-            lead_id = int(kwargs.get('lead_id'))
+            lead_id = int(kwargs.get("lead_id"))
         except (TypeError, ValueError):
-            return self._build_response(False, status=400, message='Invalid or missing lead_id')
+            return self._build_response(
+                False,
+                status=400,
+                message="Invalid or missing lead_id"
+            )
 
-        lead = request.env['crm.lead'].sudo().search([('id', '=', lead_id)], limit=1)
+        lead = request.env["crm.lead"].sudo().browse(lead_id)
 
-        if not lead:
-            return self._build_response(False, status=404, message='Lead not found')
+        if not lead.exists():
+            return self._build_response(
+                False,
+                status=404,
+                message="Lead not found"
+            )
 
-        sale_order = request.env['sale.order'].sudo().search(
+
+        sale_order = request.env["sale.order"].sudo().search(
             [
-                ('opportunity_id', '=', lead.id),
-                ('state', 'in', ['sale', 'done'])  # Ensures we only invoice confirmed orders
+                ("opportunity_id", "=", lead.id),
+                ("state", "in", ["sale", "done"]),
             ],
-            order='id desc',
-            limit=1
+            order="id desc",
+            limit=1,
         )
 
         if not sale_order:
-            return self._build_response(False, status=404, message="No confirmed sale order found.")
+            return self._build_response(
+                False,
+                status=404,
+                message="No confirmed sale order found."
+            )
 
-        remaining = sale_order.amount_total - sale_order.amount_invoiced
-        base_url = request.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        base_url = request.env["ir.config_parameter"].sudo().get_param("web.base.url")
 
-        if remaining > 0:
-            invoices = sale_order.invoice_ids.filtered(lambda inv: inv.state == 'draft')
 
-            if not invoices:
-                amount_to_invoice = min(sale_order.amount_total * 0.5, remaining)
+        remaining_to_invoice = sale_order.amount_total - sale_order.amount_invoiced
 
-                wizard = request.env['sale.advance.payment.inv'].sudo().with_context(
-                    active_model='sale.order',
-                    active_ids=sale_order.ids,
-                ).create({
-                    'advance_payment_method': 'fixed',
-                    'fixed_amount': amount_to_invoice,
-                })
-                wizard.create_invoices()
+        if remaining_to_invoice > 0:
 
-                invoice = sale_order.invoice_ids.filtered(
-                    lambda inv: inv.state == 'draft'
-                ).sorted(key=lambda x: x.id, reverse=True)[0]
-                invoice.action_post()
-            else:
-                invoice = invoices.sorted(key=lambda x: x.id, reverse=True)[0]
+            draft_invoice = sale_order.invoice_ids.filtered(
+                lambda inv: inv.state == "draft"
+            )
+
+
+            if not draft_invoice:
+                try:
+                    wizard = (
+                        request.env["sale.advance.payment.inv"]
+                        .sudo()
+                        .with_context(
+                            active_model="sale.order",
+                            active_ids=sale_order.ids,
+                        )
+                        .create({
+                            "advance_payment_method": "fixed",
+                            "fixed_amount": remaining_to_invoice,
+                        })
+                    )
+
+                    wizard.create_invoices()
+
+                    draft_invoice = sale_order.invoice_ids.filtered(
+                        lambda inv: inv.state == "draft"
+                    ).sorted("id", reverse=True)[:1]
+
+                    if draft_invoice:
+                        draft_invoice.action_post()
+
+                    invoice = draft_invoice
+
+                    return self._build_response(
+                        True,
+                        message="Payment pending.",
+                        data={
+                            "payment_status": "pending",
+                            "remaining_amount": remaining_to_invoice,
+                            "payment_url": (
+                                f"{base_url}{invoice.get_portal_url()}"
+                                if invoice else ""
+                            ),
+                        },
+                    )
+                except Exception as e:
+                    return self._build_response(
+                        False,
+                        status=400,
+                        message="Error occurred while processing invoice."
+                    )
+
+
+        posted_invoices = sale_order.invoice_ids
+
+        total_due = sum(posted_invoices.mapped("amount_residual"))
+
+        if total_due == 0:
+            return self._build_response(
+                True,
+                message="Payment completed.",
+                data={
+                    "payment_status": "paid",
+                    "remaining_amount": 0,
+                },
+            )
+
+        due_invoices = posted_invoices.filtered(
+            lambda inv: inv.amount_residual > 0
+        ).sorted("id", reverse=True)
+
+        if len(due_invoices) == 1:
+            # invoice = due_invoices[0]
 
             return self._build_response(
                 True,
-                message="Payment pending.",
+                message="Partially paid.",
                 data={
-                    "payment_status": 'pending',
-                    "remaining_amount": remaining,
-                    "payment_url": f"{base_url}{invoice.get_portal_url() if invoice else ''}",
-                }
+                    "payment_status": "pending",
+                    "remaining_amount": due_invoices.amount_residual,
+                    "payment_url": (
+                        f"{base_url}{due_invoices.get_portal_url()}"
+                    ),
+                },
             )
-
-        invoices = sale_order.invoice_ids.filtered(
-            lambda inv: inv.state not in ['draft', 'cancel']
-        ).sorted(key=lambda x: x.id, reverse=True)
-
-        if invoices:
-            invoice = invoices[0]
-            if invoice.payment_state in ['paid', 'in_payment']:
-                return self._build_response(
-                    True,
-                    message="Payment completed.",
-                    data={
-                        "payment_status": "paid",
-                        "remaining_amount": 0
-                    }
-                )
 
         return self._build_response(
             True,
-            message="Payment processing or partially paid.",
+            message="Multiple invoices pending. Kindly contact with Landoc",
             data={
                 "payment_status": "processing",
-                "remaining_amount": remaining
-            }
+                "remaining_amount": total_due,
+            },
         )
+
+    def _get_marriage_services(self, bride, groom, marriage_date):
+        service_ids = request.env['service.type'].sudo().search([
+            ('service_type', '=', 'marriage_registration')
+        ])
+
+        services = {
+            religion: service_ids.filtered(lambda s: s.religion == religion)
+            for religion in (
+                'special',
+                'christian',
+                'muslim',
+                'hindu',
+                'tamilnadu',
+                'hindu_tn_marriage_both',
+            )
+        }
+
+        cutoff_date = date(2009, 11, 23)
+
+        marriage_type = bride if bride == groom else 'other'
+
+        if marriage_type == 'christian':
+            return services['christian']
+
+        if marriage_type == 'other':
+            return services['special']
+
+        if marriage_type == 'muslim':
+            return (
+                services['muslim']
+                if marriage_date and marriage_date > cutoff_date
+                else services['special']
+            )
+
+        if marriage_type == 'hindu':
+            if marriage_date and marriage_date > cutoff_date:
+                return (
+                        services['hindu']
+                        | services['tamilnadu']
+                        | services['hindu_tn_marriage_both']
+                )
+            return services['hindu']
+
+        return request.env['service.type'].sudo()
+
+    @http.route(
+        '/api/v1/crm/marriage/registration/options',
+        type='http',
+        auth='public',
+        methods=['GET'],
+        csrf=False
+    )
+    def get_marriage_registraion_options(self, **kwargs):
+        auth_error = self._authenticate()
+        if auth_error:
+            return auth_error
+
+        try:
+            bride_religion = kwargs.get('bride_religion')
+            groom_religion = kwargs.get('groom_religion')
+            marriage_date = self._parse_date(kwargs.get('marriage_date'))
+
+            services = self._get_marriage_services(
+                bride_religion,
+                groom_religion,
+                marriage_date
+            )
+
+            options = (
+                {
+                    'marriage_place': 'Place where the marriage was solemnized'
+                }
+                if marriage_date and marriage_date < date(2020, 9, 15)
+                else {
+                    'bride_residence': 'Residence of the Bride',
+                    'groom_residence': 'Residence of the Groom',
+                    'marriage_place': 'Place where the marriage was solemnized',
+                }
+            )
+
+            response = {
+                'services': [
+                    {
+                        'service_id': service.id,
+                        'service_name': service.name,
+                    }
+                    for service in services
+                ],
+                'options': options,
+                'bride_religion': bride_religion,
+                'groom_religion': groom_religion,
+                'marriage_date': kwargs.get('marriage_date'),
+            }
+
+            return self._build_response(
+                True,
+                message="Marriage Registration Options.",
+                data=response,
+            )
+
+        except (TypeError, ValueError):
+            return self._build_response(
+                False,
+                status=400,
+                message="Invalid or missing bride religion, groom religion or marriage date.",
+            )
+
 
 
         

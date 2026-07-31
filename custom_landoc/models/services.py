@@ -28,7 +28,7 @@ class ServiceType(models.Model):
     fees_above_ninety = fields.Float(string="Fees Above Ninety", tracking=1)
     fees_above_one_hundred_fifty = fields.Float(string="Fees Above One Hundred Fifty", tracking=1)
     service_type = fields.Selection(selection=SERVICE_TYPES, required=True, tracking=1)
-    religion = fields.Selection(selection=[('hindu', 'Hindu Marriage'), ('muslim', 'Muslim Marriage'), ('christian', 'Christian Marriage'), ('tamilnadu', 'TN Marriage'), ('special', 'Special Marriage')], required=True, tracking=1)
+    religion = fields.Selection(selection=[('hindu', 'Hindu Marriage'),('hindu_tn_marriage_both', 'Hindu and TN Marriage Registration both'), ('muslim', 'Muslim Marriage'), ('christian', 'Christian Marriage'), ('tamilnadu', 'TN Marriage'), ('special', 'Special Marriage')], required=True, tracking=1)
 
     vendor_products_ids = fields.Many2many(comodel_name='product.product', domain="[('type','=', 'service'), ('purchase_ok','=',True)]")
 

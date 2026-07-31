@@ -8,12 +8,31 @@
             <field name="model">product.category</field>
             <field name="inherit_id" ref="product.product_category_form_view"/>
             <field name="arch" type="xml">
+                <xpath expr="//div[@name='button_box']" position="before">
+                    <div class="d-flex justify-content-end">
+                        <field name="is_publish_to_bot" invisible="1"/>
+                        <button class="oe_stat_button btn btn-secondary" name="action_is_publish_to_bot" invisible="not is_publish_to_bot"
+                                icon="fa-globe" type="object">
+                            <div class="o_stat_info o_field_widget">
+                                <span class="o_stat_text text-success">Published to Bot</span>
+                            </div>
+                        </button>
+
+                        <button class="oe_stat_button btn btn-secondary" name="action_is_publish_to_bot" invisible="is_publish_to_bot"
+                                icon="fa-eye-slash" type="object">
+                            <div class="o_stat_info o_field_widget">
+                                <span class="o_stat_text text-danger">Unpublished to Bot</span>
+                            </div>
+                        </button>
+                    </div>
+
+                </xpath>
                 <xpath expr="//group[@name='first']" position="before">
                     <group invisible="not parent_id" groups="custom_landoc.group_landoc_manager">
                         <group>
                             <field name="is_service" invisible="not parent_id"/>
-                              <field name="is_propertychecklist_needed" invisible="not parent_id"/>
-                              <field name="is_marriage_category" invisible="not parent_id"/>
+                            <field name="is_propertychecklist_needed" invisible="not parent_id"/>
+                            <field name="is_marriage_category" invisible="not parent_id"/>
                         </group>
                     </group>
                 </xpath>

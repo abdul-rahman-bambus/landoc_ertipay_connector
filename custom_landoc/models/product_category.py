@@ -8,6 +8,7 @@ class ProductCategory(models.Model):
     workflow_master_id = fields.Many2one(comodel_name="workflow.master", string="Workflow Master")
     is_propertychecklist_needed = fields.Boolean(string="Property Checklist Needed", tracking=1)
     is_marriage_category = fields.Boolean(string="Marriage Registraion", tracking=1)
+    is_publish_to_bot = fields.Boolean(string="Publish to Bot", tracking=1)
 
     @api.depends('name')
     @api.depends_context('calling_model')
@@ -19,3 +20,9 @@ class ProductCategory(models.Model):
                 category.display_name = category.name
             else:
                 category.display_name = category.complete_name
+
+    def action_is_publish_to_bot(self):
+        if self.is_publish_to_bot:
+            self.is_publish_to_bot = False
+        else:
+            self.is_publish_to_bot = True

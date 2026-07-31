@@ -3,6 +3,7 @@ import logging
 import secrets
 import subprocess
 from datetime import timedelta
+from decimal import Decimal, ROUND_HALF_UP
 
 import requests
 
@@ -16,6 +17,10 @@ class PaymentProvider(models.Model):
     _inherit = 'payment.provider'
 
     code = fields.Selection(selection_add=[('ertipay', 'Ertipay')], ondelete={'ertipay': 'set default'})
+    is_trn_charges_applied = fields.Boolean(default=False, string='Transaction Charges Applied')
+    trn_percentage  = fields.Float(string='Transaction Percentage')
+    trn_tax_percentage = fields.Float(string='Transaction Tax Percentage')
+
 
     ertipay_merchant_id = fields.Char(string='Merchant ID', groups='base.group_system')
     ertipay_email = fields.Char(string='Pay-In Email', groups='base.group_system')
@@ -52,6 +57,56 @@ class PaymentProvider(models.Model):
         groups='base.group_system',
         help='Log Ertipay API endpoints, payloads, and responses in the Odoo server log. API secrets are masked, while tokens are shown for server-side testing.',
     )
+
+    def _calculate_total_payable(self, sale_id, is_partial):
+        sale_order = self.env['sale.order'].browse(sale_id)
+
+        # Convert query parameter to boolean
+        if isinstance(is_partial, str):
+            is_partial = is_partial.lower() == 'true'
+
+        if is_partial == None and sale_order.require_payment and sale_order.require_payment:
+            is_partial = True
+
+        amount = (
+            sale_order._get_prepayment_required_amount()
+            if is_partial
+            else sale_order.amount_total
+        )
+
+        amount = Decimal(str(amount))
+        trn_percentage = Decimal(str(self.trn_percentage))
+        gst_percentage = Decimal(str(self.trn_tax_percentage))
+
+        transaction_fee = (
+                amount * trn_percentage / Decimal("100")
+        ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        gst = (
+                transaction_fee * gst_percentage / Decimal("100")
+        ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        total = (
+                amount + transaction_fee + gst
+        ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        _logger.info(
+            "Amount: %.2f | Transaction Fee (%.2f%%): %.2f | GST (%s%%): %.2f | Total: %.2f",
+            amount,
+            self.trn_percentage,
+            transaction_fee,
+            gst_percentage,
+            gst,
+            total,
+        )
+
+
+        return {
+            'amount': amount,
+            'transaction_fee': transaction_fee,
+            'gst': gst,
+            'total': total,
+        }
 
     @api.constrains('ertipay_encryption_key')
     def _check_ertipay_encryption_key(self):
