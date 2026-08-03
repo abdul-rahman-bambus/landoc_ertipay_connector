@@ -16,6 +16,10 @@
                                 <field name="ertipay_transaction_fee"/>
                                 <field name="ertipay_gst"/>
                                 <field name="ertipay_total_paid"/>
+                                <field name="ertipay_fee_percentage"/>
+                                <field name="ertipay_gst_percentage"/>
+                                <field name="ertipay_received_amount"/>
+                                <field name="ertipay_amount_mismatch"/>
                                 <field name="ertipay_session_id"/>
                                 <field name="ertipay_payment_reference"/>
                                 <field name="ertipay_raw_response"/>

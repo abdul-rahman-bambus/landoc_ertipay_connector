@@ -47,17 +47,30 @@
         <xpath expr="//label[@t-out='pm_sudo.name']" position="after">
 
             <t t-set="provider_sudo"
-                t-value="pm_sudo.provider_ids.filtered(lambda p: p in providers_sudo)[:1]"/>
-
-             <t t-set="total_percentage"
-                t-value="provider_sudo._calculate_total_payable(request.params.get('order_id'), request.params.get('downpayment'))"/>
-
-
-            <span class="badge bg-info ms-2"
-                  t-if="provider_sudo.is_trn_charges_applied">
-                Total Payable: <t t-out="total_percentage.get('total')"/>
-                (Includes transaction fee &amp; GST)
-            </span>
+               t-value="pm_sudo.provider_ids.filtered(lambda p: p in providers_sudo and p.code == 'ertipay')[:1]"/>
+            <t t-if="provider_sudo and provider_sudo.is_trn_charges_applied">
+                <t t-set="charge_values"
+                   t-value="provider_sudo._calculate_total_payable(request.params.get('order_id'), request.params.get('downpayment'))"/>
+                <div class="alert alert-info mt-2 mb-0 py-2" t-if="charge_values">
+                    <div><strong>Landoc amount:</strong>
+                        <span t-out="charge_values['amount']"
+                              t-options="{'widget': 'monetary', 'display_currency': charge_values['currency']}"/>
+                    </div>
+                    <div><strong>Ertipay commission:</strong>
+                        <span t-out="charge_values['transaction_fee']"
+                              t-options="{'widget': 'monetary', 'display_currency': charge_values['currency']}"/>
+                    </div>
+                    <div><strong>GST on commission:</strong>
+                        <span t-out="charge_values['gst']"
+                              t-options="{'widget': 'monetary', 'display_currency': charge_values['currency']}"/>
+                    </div>
+                    <div><strong>Total payable through Ertipay:</strong>
+                        <span t-out="charge_values['total']"
+                              t-options="{'widget': 'monetary', 'display_currency': charge_values['currency']}"/>
+                    </div>
+                    <small class="text-muted">Gateway charges are not added to the Landoc invoice.</small>
+                </div>
+            </t>
 
         </xpath>
 
