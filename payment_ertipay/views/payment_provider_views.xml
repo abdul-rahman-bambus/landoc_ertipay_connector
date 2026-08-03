@@ -26,12 +26,12 @@
                     <group>
                         <group>
                             <field name="is_trn_charges_applied"/>
-                            <label for="trn_percentage"/>
+                            <label for="trn_percentage" invisible="not is_trn_charges_applied"/>
                             <div id="trn_percentage">
                                 <field name="trn_percentage" invisible="not is_trn_charges_applied"  style="width: 5rem"/>%
                             </div>
 
-                            <label for="trn_tax_percentage"/>
+                            <label for="trn_tax_percentage" invisible="not is_trn_charges_applied"/>
                             <div id="trn_tax_percentage">
                                 <field name="trn_tax_percentage" invisible="not is_trn_charges_applied"  style="width: 5rem"/>%
                             </div>
