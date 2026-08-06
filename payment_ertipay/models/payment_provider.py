@@ -18,10 +18,8 @@ class PaymentProvider(models.Model):
 
     code = fields.Selection(selection_add=[('ertipay', 'Ertipay')], ondelete={'ertipay': 'set default'})
     is_trn_charges_applied = fields.Boolean(default=False, string='Transaction Charges Applied')
-    trn_percentage  = fields.Float(string='Transaction Percentage')
+    trn_percentage = fields.Float(string='Transaction Percentage')
     trn_tax_percentage = fields.Float(string='Transaction Tax Percentage')
-
-
     ertipay_merchant_id = fields.Char(string='Merchant ID', groups='base.group_system')
     ertipay_email = fields.Char(string='Pay-In Email', groups='base.group_system')
     ertipay_api_secret = fields.Char(string='Pay-In API Secret', groups='base.group_system')
@@ -59,54 +57,66 @@ class PaymentProvider(models.Model):
     )
 
     def _calculate_total_payable(self, sale_id, is_partial):
-        sale_order = self.env['sale.order'].browse(sale_id)
+        """Return the checkout charge breakdown for a sale order.
 
-        # Convert query parameter to boolean
+        This method is called from the public payment-method template, so invalid
+        or missing request parameters must produce no breakdown rather than an
+        access error. The payment transaction performs the authoritative charge
+        calculation again and stores a snapshot before contacting Ertipay.
+        """
+        self.ensure_one()
+        if self.code != 'ertipay' or not self.is_trn_charges_applied or not sale_id:
+            return {}
+        try:
+            sale_order = self.env['sale.order'].browse(int(sale_id)).exists()
+        except (TypeError, ValueError):
+            return {}
+        if not sale_order:
+            return {}
+
         if isinstance(is_partial, str):
-            is_partial = is_partial.lower() == 'true'
-
-        if is_partial == None and sale_order.require_payment and sale_order.require_payment:
-            is_partial = True
+            is_partial = is_partial.lower() in ('1', 'true', 'yes')
+        elif is_partial is None:
+            is_partial = bool(sale_order.require_payment)
 
         amount = (
             sale_order._get_prepayment_required_amount()
             if is_partial
             else sale_order.amount_total
         )
+        values = self._ertipay_calculate_charges(amount)
+        values['currency'] = sale_order.currency_id
+        return values
 
-        amount = Decimal(str(amount))
-        trn_percentage = Decimal(str(self.trn_percentage))
-        gst_percentage = Decimal(str(self.trn_tax_percentage))
-
-        transaction_fee = (
-                amount * trn_percentage / Decimal("100")
-        ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
-        gst = (
-                transaction_fee * gst_percentage / Decimal("100")
-        ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
-        total = (
-                amount + transaction_fee + gst
-        ).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
-        _logger.info(
-            "Amount: %.2f | Transaction Fee (%.2f%%): %.2f | GST (%s%%): %.2f | Total: %.2f",
-            amount,
-            self.trn_percentage,
-            transaction_fee,
-            gst_percentage,
-            gst,
-            total,
+    def _ertipay_calculate_charges(self, amount):
+        """Calculate commission without changing the Landoc invoice amount."""
+        self.ensure_one()
+        amount = Decimal(str(amount or 0)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        if self.is_trn_charges_applied:
+            fee_percentage = Decimal(str(self.trn_percentage or 0))
+            gst_percentage = Decimal(str(self.trn_tax_percentage or 0))
+        else:
+            fee_percentage = gst_percentage = Decimal('0')
+        transaction_fee = (amount * fee_percentage / Decimal('100')).quantize(
+            Decimal('0.01'), rounding=ROUND_HALF_UP,
         )
-
-
+        gst = (transaction_fee * gst_percentage / Decimal('100')).quantize(
+            Decimal('0.01'), rounding=ROUND_HALF_UP,
+        )
         return {
             'amount': amount,
+            'fee_percentage': fee_percentage,
+            'gst_percentage': gst_percentage,
             'transaction_fee': transaction_fee,
             'gst': gst,
-            'total': total,
+            'total': amount + transaction_fee + gst,
         }
+
+    @api.constrains('trn_percentage', 'trn_tax_percentage')
+    def _check_ertipay_charge_percentages(self):
+        for provider in self:
+            if provider.trn_percentage < 0 or provider.trn_tax_percentage < 0:
+                raise ValidationError(_('Ertipay transaction and tax percentages cannot be negative.'))
 
     @api.constrains('ertipay_encryption_key')
     def _check_ertipay_encryption_key(self):
