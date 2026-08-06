@@ -84,7 +84,10 @@ class PaymentProvider(models.Model):
             if is_partial
             else sale_order.amount_total
         )
-        values = self._ertipay_calculate_charges(amount)
+        values = {
+            key: float(value)
+            for key, value in self._ertipay_calculate_charges(amount).items()
+        }
         values['currency'] = sale_order.currency_id
         return values
 
