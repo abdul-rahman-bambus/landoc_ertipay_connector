@@ -103,7 +103,8 @@ class PaymentTransaction(models.Model):
             'initMode': provider.ertipay_init_mode or '04',
             'txnRefId': txn_ref_id,
             'txnAmt': '%.2f' % total["total"],
-            'txnRemarks': self.reference or 'Payment',
+            # Ertipay rejects digits and punctuation in this field.
+            'txnRemarks': 'Payment',
             'refUrl': '%s/payment/ertipay/return' % base_url.rstrip('/'),
         }
         provider._ertipay_log_api('UPI plain request payload before encryption: %s', payload)

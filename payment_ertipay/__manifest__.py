@@ -1,6 +1,6 @@
 {
     'name': 'Payment Provider: Ertipay',
-    'version': '18.0.1.1.2',
+    'version': '18.0.1.1.3',
     'category': 'Accounting/Payment Providers',
     'summary': 'Accept UPI payments through the Ertipay pay-in gateway.',
     'author': 'Bambus Technologies LLP',

@@ -164,7 +164,14 @@ class PaymentProvider(models.Model):
         if isinstance(payload, dict):
             sanitized = {}
             for key, value in payload.items():
-                if key in ('apiPayinApiSecret', 'Authorization') and value:
+                if key.lower() in {
+                    'apipayinapisecret',
+                    'authorization',
+                    'token',
+                    'jwttoken',
+                    'accesstoken',
+                    'bearertoken',
+                } and value:
                     sanitized[key] = self._ertipay_mask_sensitive(value)
                 else:
                     sanitized[key] = self._ertipay_sanitized_payload(value)
@@ -210,7 +217,11 @@ class PaymentProvider(models.Model):
         self._ertipay_validate_configuration()
         refresh_at = fields.Datetime.now() + timedelta(minutes=5)
         if self.ertipay_token and self.ertipay_token_expiry and self.ertipay_token_expiry > refresh_at:
-            self._ertipay_log_api('Using cached bearer token expiring at %s: %s', self.ertipay_token_expiry, self.ertipay_token)
+            self._ertipay_log_api(
+                'Using cached bearer token expiring at %s: %s',
+                self.ertipay_token_expiry,
+                self._ertipay_mask_sensitive(self.ertipay_token),
+            )
             return self.ertipay_token
 
         endpoint = '%s/token' % self._ertipay_get_base_url()
