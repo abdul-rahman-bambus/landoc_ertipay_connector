@@ -177,6 +177,17 @@ equal the Landoc amount.
 8. Change provider percentages after initiating a payment and verify its stored
    requested fee, GST, and total do not change.
 
+### Manual status refresh during trial/UAT
+
+When Ertipay callbacks or automatic status updates are unavailable during a
+trial, open **Accounting / Invoicing → Customers → Payment Transactions**, open
+the pending Ertipay transaction, and click **Fetch Ertipay Status**. Odoo calls
+the correct `/uat/status/<txnRefId>` or `/prod/status/<txnRefId>` endpoint,
+decrypts and logs the plain response, stores the reconciliation response, and
+applies the same status rules used for callbacks. The button remains available
+for pending and error transactions and is hidden after the transaction is done
+or cancelled.
+
 ### Production readiness
 
 1. Replace UAT credentials with production credentials.

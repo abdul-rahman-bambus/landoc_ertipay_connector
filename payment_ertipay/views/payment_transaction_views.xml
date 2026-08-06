@@ -5,6 +5,14 @@
         <field name="model">payment.transaction</field>
         <field name="inherit_id" ref="payment.payment_transaction_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_ertipay_fetch_status"
+                        string="Fetch Ertipay Status"
+                        type="object"
+                        class="btn-primary"
+                        invisible="provider_code != 'ertipay' or state in ('done', 'cancel')"
+                        confirm="Fetch the latest status from Ertipay and process the decrypted response?"/>
+            </xpath>
             <xpath expr="//sheet" position="inside">
                 <notebook>
                     <page string="Ertipay">

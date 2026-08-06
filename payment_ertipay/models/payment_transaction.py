@@ -172,6 +172,39 @@ class PaymentTransaction(models.Model):
             return plain_response
         return body
 
+    def action_ertipay_fetch_status(self):
+        """Manually fetch, decrypt, log, and process the Ertipay status."""
+        self.ensure_one()
+        if self.provider_code != 'ertipay':
+            raise UserError(_('Manual Ertipay status fetching is only available for Ertipay transactions.'))
+
+        status_response = self._ertipay_fetch_status()
+        notification_data = status_response.get('data', status_response)
+        if not isinstance(notification_data, dict):
+            raise UserError(_('Ertipay returned an invalid status response.'))
+
+        self.provider_id._ertipay_log_api(
+            'Manually fetched plain status response for %s: %s',
+            self.reference,
+            self.provider_id._ertipay_sanitized_payload(notification_data),
+        )
+        self._process_notification_data(notification_data)
+        status = notification_data.get('status') or notification_data.get('orgStatus') or _('Unknown')
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Ertipay Status Refreshed'),
+                'message': _('Ertipay returned status %s. The transaction is now %s.') % (
+                    status,
+                    self.state,
+                ),
+                'type': 'success' if self.state == 'done' else 'warning',
+                'sticky': self.state != 'done',
+                'next': {'type': 'ir.actions.client', 'tag': 'reload'},
+            },
+        }
+
     def _get_tx_from_notification_data(self, provider_code, notification_data):
         tx = super()._get_tx_from_notification_data(provider_code, notification_data)
         if provider_code != 'ertipay' or len(tx) == 1:
