@@ -42,6 +42,7 @@ class PaymentTransaction(models.Model):
         string='Gateway Confirmed Total', currency_field='currency_id', readonly=True, copy=False,
     )
     ertipay_amount_mismatch = fields.Boolean(string='Gateway Amount Mismatch', readonly=True, copy=False)
+    ertipay_provider_state = fields.Selection(related='provider_id.state', readonly=True)
     ertipay_session_id = fields.Char(readonly=True, copy=False)
     ertipay_payment_reference = fields.Char(readonly=True, copy=False)
     ertipay_raw_response = fields.Json(readonly=True, copy=False)
@@ -204,6 +205,62 @@ class PaymentTransaction(models.Model):
                 'next': {'type': 'ir.actions.client', 'tag': 'reload'},
             },
         }
+
+    def _ertipay_simulate_uat_status(self, status):
+        """Set a UAT transaction result, then fetch and process its status."""
+        self.ensure_one()
+        provider = self.provider_id
+        if self.provider_code != 'ertipay' or provider.state != 'test':
+            raise UserError(_('Ertipay status simulation is only available in Test Mode.'))
+        if self.state in ('done', 'cancel'):
+            raise UserError(_('A completed or cancelled transaction cannot be simulated.'))
+        if status not in ('S', 'F'):
+            raise UserError(_('The Ertipay UAT status must be S or F.'))
+
+        endpoint = '%s/callback' % provider._ertipay_get_base_url()
+        if '/uat/callback' not in endpoint:
+            raise UserError(_('Refusing to call the Ertipay callback simulator outside UAT.'))
+        payload = {
+            'txnRefId': self._ertipay_get_txn_ref_id(),
+            'status': status,
+        }
+        provider._ertipay_log_api('UAT callback simulator endpoint: %s', endpoint)
+        provider._ertipay_log_api('UAT callback simulator payload: %s', payload)
+        try:
+            response = requests.post(
+                endpoint,
+                headers=provider._ertipay_headers(),
+                json=payload,
+                timeout=30,
+            )
+        except requests.exceptions.RequestException as error:
+            _logger.exception('[Ertipay] UAT callback simulation failed before receiving a response.')
+            raise UserError(_('Ertipay UAT callback simulation failed: %s') % error) from error
+        provider._ertipay_log_api('UAT callback simulator response status: %s', response.status_code)
+        try:
+            response_body = response.json()
+        except requests.exceptions.JSONDecodeError as error:
+            raise UserError(_(
+                'Ertipay UAT callback simulator returned an invalid response (HTTP %s).'
+            ) % response.status_code) from error
+        if not isinstance(response_body, dict):
+            raise UserError(_('Ertipay UAT callback simulator returned an invalid JSON response.'))
+        provider._ertipay_log_api(
+            'UAT callback simulator response body: %s',
+            provider._ertipay_sanitized_payload(response_body),
+        )
+        if not response.ok or not response_body.get('success'):
+            raise UserError(_(
+                'Ertipay UAT callback simulation failed: %s'
+            ) % (response_body.get('message') or response_body))
+
+        return self.action_ertipay_fetch_status()
+
+    def action_ertipay_simulate_uat_success(self):
+        return self._ertipay_simulate_uat_status('S')
+
+    def action_ertipay_simulate_uat_failure(self):
+        return self._ertipay_simulate_uat_status('F')
 
     def _get_tx_from_notification_data(self, provider_code, notification_data):
         tx = super()._get_tx_from_notification_data(provider_code, notification_data)

@@ -12,6 +12,17 @@
                         class="btn-primary"
                         invisible="provider_code != 'ertipay' or state in ('done', 'cancel')"
                         confirm="Fetch the latest status from Ertipay and process the decrypted response?"/>
+                <button name="action_ertipay_simulate_uat_success"
+                        string="UAT Mark Successful"
+                        type="object"
+                        class="btn-primary"
+                        invisible="provider_code != 'ertipay' or ertipay_provider_state != 'test' or state in ('done', 'cancel')"
+                        confirm="Mark this Ertipay UAT transaction successful, then fetch and process its status?"/>
+                <button name="action_ertipay_simulate_uat_failure"
+                        string="UAT Mark Failed"
+                        type="object"
+                        invisible="provider_code != 'ertipay' or ertipay_provider_state != 'test' or state in ('done', 'cancel')"
+                        confirm="Mark this Ertipay UAT transaction failed, then fetch and process its status?"/>
             </xpath>
             <xpath expr="//sheet" position="inside">
                 <notebook>
@@ -31,6 +42,7 @@
                                 <field name="ertipay_session_id"/>
                                 <field name="ertipay_payment_reference"/>
                                 <field name="ertipay_raw_response"/>
+                                <field name="ertipay_provider_state" invisible="1"/>
                             </group>
                         </group>
 

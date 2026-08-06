@@ -179,14 +179,20 @@ equal the Landoc amount.
 
 ### Manual status refresh during trial/UAT
 
-When Ertipay callbacks or automatic status updates are unavailable during a
-trial, open **Accounting / Invoicing → Customers → Payment Transactions**, open
-the pending Ertipay transaction, and click **Fetch Ertipay Status**. Odoo calls
-the correct `/uat/status/<txnRefId>` or `/prod/status/<txnRefId>` endpoint,
-decrypts and logs the plain response, stores the reconciliation response, and
-applies the same status rules used for callbacks. The button remains available
-for pending and error transactions and is hidden after the transaction is done
-or cancelled.
+Ertipay UAT does not complete real UPI payments. To finish a UAT scenario, open
+**Accounting / Invoicing → Customers → Payment Transactions**, open the pending
+Ertipay transaction, and choose one of these Test Mode-only actions:
+
+- **UAT Mark Successful** posts `S` to `/uat/callback`;
+- **UAT Mark Failed** posts `F` to `/uat/callback`.
+
+After Ertipay accepts the simulated result, Odoo immediately calls
+`/uat/status/<txnRefId>`, decrypts and logs the plain response, stores the
+reconciliation response, and applies the normal callback status rules. Use
+**Fetch Ertipay Status** to repeat only the status query if the simulator update
+is not immediately visible. UAT simulation is blocked in production; live
+transactions rely on Ertipay's automatic callback, with manual status fetching
+available as a fallback.
 
 ### Production readiness
 
