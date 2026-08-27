@@ -38,6 +38,10 @@
         'views/crm_lead.xml',
     ],
     'description': """
+        Extends Odoo CRM into the main Landoc service-request workflow. It links
+        leads with customers, services, properties, departments, workflows,
+        document checklists, timers, quotations, invoices, expenses, vendor
+        bills, service bookings, and detailed Landoc service records.
     """,
     'demo_xml': [],
     'license': 'OPL-1',

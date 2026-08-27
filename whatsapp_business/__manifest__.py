@@ -2,6 +2,12 @@
     "name": "Whatsapp Business Integration",
     "version": "18.0.1.0.0",
     "summary": "Integrate Whatsapp Business in Odoo.",
+    "description": """
+        Integrates Meta WhatsApp Business with Odoo chatter and Discuss. It
+        manages accounts, webhook verification, inbound and outbound messages,
+        delivery statuses, attachments, templates, variables, API logs, contact
+        matching, channels, and automated model-triggered communication.
+    """,
     "category": "Tools",
     'author': 'Bambus Technologies LLP',
     'sequence': '1',

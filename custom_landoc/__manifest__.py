@@ -34,6 +34,11 @@
         'views/landoc_service_appointment_view.xml'
     ],
     'description': """
+        Provides the shared Landoc master data and configuration used by the
+        service-management add-ons. It defines services, service categories,
+        workflows, checklists, property and location masters, Sub-Registrar
+        Offices, fees, appointments, availability, user settings, and access
+        controls.
     """,
     'demo_xml': [],
     'license': 'OPL-1',

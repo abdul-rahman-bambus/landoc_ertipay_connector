@@ -18,6 +18,9 @@
         'views/currency_denomination.xml',
     ],
     'description': """
+        Records opening and closing cash counts as denomination lines. It
+        calculates each line from denomination and quantity and provides total
+        opening and closing cash values for Landoc accounting operations.
     """,
     'demo_xml': [],
     'license': 'OPL-1',

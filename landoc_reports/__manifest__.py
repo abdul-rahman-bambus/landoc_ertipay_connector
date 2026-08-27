@@ -2,6 +2,11 @@
     "name": "Landoc Reports",
     "version": "18.0.1.0.0",
     "summary": "Landoc Reports",
+    "description": """
+        Adds printable reports for Landoc service-processing records, including
+        the Encumbrance Certificate report action and template exposed from the
+        Landoc service form.
+    """,
     "author": "Bambus Technologies LLP",
     "website": "",
     "sequence": "1",
