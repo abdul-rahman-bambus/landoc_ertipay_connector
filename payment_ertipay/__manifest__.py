@@ -3,6 +3,12 @@
     'version': '18.0.1.3.0',
     'category': 'Accounting/Payment Providers',
     'summary': 'Accept UPI payments through the Ertipay pay-in gateway.',
+    'description': """
+        Integrates the Ertipay UPI pay-in gateway with Odoo Payment. It supports
+        full and partial payable amounts, gateway charges, API authentication,
+        encrypted request and response payloads, payment creation, redirects,
+        callbacks, status checks, UAT simulation, and invoice payment metadata.
+    """,
     'author': 'Bambus Technologies LLP',
     'website': 'https://bambustechnologies.in/',
     'depends': ['payment', 'website_payment', 'account'],

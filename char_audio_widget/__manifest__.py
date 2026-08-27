@@ -2,6 +2,12 @@
     "name": "Char Audio Recorder",
     "version": "18.0.1.0.0",
     "summary": "Char Audio Recorder",
+    "description": """
+        Provides a reusable backend field widget for recording audio and
+        converting speech to text. It also stores user transcription-language
+        preferences and exposes the browser and language helpers used by the
+        recorder widget.
+    """,
     "author": "Mohammed Shahil, Bambus Technologies LLP",
     "website": "",
     "license": "OPL-1",
