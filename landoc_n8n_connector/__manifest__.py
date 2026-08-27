@@ -1,8 +1,7 @@
 {
     'name': 'Landoc N8N Connector',
-    'version': '18.0',
+    'version': '18.0.1.0.0',
     'category': 'Service',
-    'active': True,
     'summary': 'N8N Connector',
     'description': """
         Connects n8n and chatbot workflows with Landoc CRM. It provides
@@ -11,7 +10,7 @@
         date selection, and chatbot session context on CRM and payment records.
     """,
     'author': 'Bambus Technologies LLP',
-    'sequence': '1',
+    'sequence': 1,
     'website': 'https://bambustechnologies.in/',
     'depends': [
         'base', 'sale', 'crm', 'custom_crm', 'contacts', 'partner_city_m2o', 'custom_landoc', 'sales_team', 'payment',

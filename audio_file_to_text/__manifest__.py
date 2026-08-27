@@ -1,6 +1,6 @@
 {
     "name": "Audio File to Text",
-    "version": "18.0.1.0",
+    "version": "18.0.1.0.0",
     "summary": "Audio File to Text",
     "description": """
         Transcribes uploaded or recorded audio into text using configurable
@@ -19,8 +19,9 @@
         "views/res_users.xml",
         "views/transcribe.xml",
     ],
-    "external_dependencies":{
-        "python": ['FFmpeg', 'PyAudio', 'SpeechRecognition']
+    "external_dependencies": {
+        "python": ["pydub", "speech_recognition"],
+        "bin": ["ffmpeg"],
     },
     "assets": {
         "web.assets_backend": [
@@ -29,4 +30,5 @@
     },
     "application": True,
     "auto_install": False,
+    "installable": True,
 }

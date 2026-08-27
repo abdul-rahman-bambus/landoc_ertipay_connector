@@ -18,10 +18,9 @@
         "views/res_users.xml",
         "views/res_trans_lang.xml",
     ],
-    # Commented because of py warnings.
-    # "external_dependencies":{
-    #     "python": ['FFmpeg', 'PyAudio', 'SpeechRecognition']
-    # },
+    "external_dependencies": {
+        "python": ["pyaudio", "speech_recognition"],
+    },
     "assets": {
         "web.assets_backend": [
             "char_audio_widget/static/src/views/fields/audio_field/audio_field.js",
@@ -30,4 +29,5 @@
     },
     "application": True,
     "auto_install": False,
+    "installable": True,
 }

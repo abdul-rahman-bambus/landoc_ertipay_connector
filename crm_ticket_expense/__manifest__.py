@@ -1,5 +1,6 @@
 {
     'name': 'CRM Ticket Expenses',
+    'version': '18.0.1.0.0',
     'category': 'CRM',
     'summary': 'Link employee expenses to CRM Leads (Tickets)',
     'description': """
@@ -17,4 +18,5 @@
     'license': 'OPL-1',
     'installable': True,
     'application': False,
+    'auto_install': False,
 }

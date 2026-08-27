@@ -1,6 +1,6 @@
 {
     "name": "Partner City Many2one",
-    "version": "1.0.0",
+    "version": "18.0.1.0.0",
     "summary": "Use a Many2one field for City on Contacts (res.partner)",
     "description": """
         Provides a structured city master and replaces free-text city entry with
@@ -14,10 +14,10 @@
     "data": [
         "security/ir.model.access.csv",
         "data/india_city.xml",
-        "views/res_partner_view.xml"
+        "views/res_partner_view.xml",
     ],
-    #"post_init_hook": "post_init_hook",
     "installable": True,
     "application": False,
-    "license": "LGPL-3"
+    "auto_install": False,
+    "license": "LGPL-3",
 }

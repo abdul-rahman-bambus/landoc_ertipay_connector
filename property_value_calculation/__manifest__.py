@@ -10,7 +10,7 @@
     """,
     "author": "Bambus Technologies LLP",
     "website": "",
-    "sequence": "1",
+    "sequence": 1,
     "license": "OPL-1",
     "category": "Extra Tools",
     "depends": ["base", "crm", "custom_landoc", "custom_crm"],
@@ -21,4 +21,5 @@
     ],
     "application": True,
     "auto_install": False,
+    "installable": True,
 }

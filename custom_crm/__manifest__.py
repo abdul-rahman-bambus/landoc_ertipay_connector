@@ -1,11 +1,10 @@
 {
     'name': 'Custom CRM',
-    'version': '18.0',
+    'version': '18.0.1.0.0',
     'category': 'Sales',
-    'active': True,
     'summary': 'CRM Customization',
     'author': 'Bambus Technologies LLP',
-    'sequence': '1',
+    'sequence': 1,
     'website': 'https://bambustechnologies.in/',
     'depends': [
         'base', 'sale', 'crm', 'stock', 'partner_city_m2o', 'sale_management', 'hr_expense', 'account', 'custom_landoc', 'sales_team',
@@ -43,9 +42,8 @@
         document checklists, timers, quotations, invoices, expenses, vendor
         bills, service bookings, and detailed Landoc service records.
     """,
-    'demo_xml': [],
     'license': 'OPL-1',
-    "images": ['static/description/icon.png'],
+    'images': ['static/description/icon.png'],
     'installable': True,
     'auto_install': False,
     'application': True,
