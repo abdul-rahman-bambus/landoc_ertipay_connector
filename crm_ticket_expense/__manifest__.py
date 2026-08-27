@@ -1,10 +1,13 @@
 {
     'name': 'CRM Ticket Expenses',
+    'version': '18.0.1.0.0',
     'category': 'CRM',
     'summary': 'Link employee expenses to CRM Leads (Tickets)',
     'description': """
-        This module links expenses with CRM leads or tickets
-        allowing expense tracking per ticket.
+        Links employee expenses to Landoc CRM tickets and provides a guided
+        financial workflow for confirming quotations, creating customer
+        invoices, registering receipts, creating and paying vendor bills, and
+        monitoring ticket collections, costs, and financial status.
     """,
     'depends': ['base', 'crm', 'account', 'hr_expense', 'custom_crm'],
     'data': [
@@ -15,4 +18,5 @@
     'license': 'OPL-1',
     'installable': True,
     'application': False,
+    'auto_install': False,
 }

@@ -1,11 +1,10 @@
 {
     'name': 'Custom Landoc',
-    'version': '18.0',
+    'version': '18.0.1.0.0',
     'category': 'Sales',
-    'active': True,
     'summary': 'Landoc Customization',
     'author': 'Bambus Technologies LLP',
-    'sequence': '1',
+    'sequence': 1,
     'website': 'https://bambustechnologies.in/',
     'depends': [
         'base', 'sale', 'sale_crm', 'hr', 'crm', 'sale_management', 'product', 'contacts', 'account', 'hr_expense', 'purchase',
@@ -31,13 +30,17 @@
         'views/res_config_settings_views.xml',
         'views/res_users_view.xml',
         'views/landoc_fees_view.xml',
-        'views/landoc_service_appointment_view.xml'
+        'views/landoc_service_appointment_view.xml',
     ],
     'description': """
+        Provides the shared Landoc master data and configuration used by the
+        service-management add-ons. It defines services, service categories,
+        workflows, checklists, property and location masters, Sub-Registrar
+        Offices, fees, appointments, availability, user settings, and access
+        controls.
     """,
-    'demo_xml': [],
     'license': 'OPL-1',
-    "images": ['static/description/icon.png'],
+    'images': ['static/description/icon.png'],
     'installable': True,
     'auto_install': False,
     'application': True,

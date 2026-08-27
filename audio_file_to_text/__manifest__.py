@@ -1,7 +1,12 @@
 {
     "name": "Audio File to Text",
-    "version": "18.0.1.0",
-    "summary": "Audio File to Text" "",
+    "version": "18.0.1.0.0",
+    "summary": "Audio File to Text",
+    "description": """
+        Transcribes uploaded or recorded audio into text using configurable
+        speech-recognition languages. It provides transcription models and a
+        wizard and can post the resulting text into an Odoo record's chatter.
+    """,
     "author": "",
     "website": "",
     "license": "OPL-1",
@@ -14,8 +19,9 @@
         "views/res_users.xml",
         "views/transcribe.xml",
     ],
-    "external_dependencies":{
-        "python": ['FFmpeg', 'PyAudio', 'SpeechRecognition']
+    "external_dependencies": {
+        "python": ["pydub", "speech_recognition"],
+        "bin": ["ffmpeg"],
     },
     "assets": {
         "web.assets_backend": [
@@ -24,4 +30,5 @@
     },
     "application": True,
     "auto_install": False,
+    "installable": True,
 }

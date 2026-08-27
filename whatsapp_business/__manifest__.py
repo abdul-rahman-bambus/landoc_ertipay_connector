@@ -2,10 +2,16 @@
     "name": "Whatsapp Business Integration",
     "version": "18.0.1.0.0",
     "summary": "Integrate Whatsapp Business in Odoo.",
+    "description": """
+        Integrates Meta WhatsApp Business with Odoo chatter and Discuss. It
+        manages accounts, webhook verification, inbound and outbound messages,
+        delivery statuses, attachments, templates, variables, API logs, contact
+        matching, channels, and automated model-triggered communication.
+    """,
     "category": "Tools",
-    'author': 'Bambus Technologies LLP',
-    'sequence': '1',
-    'website': 'https://bambustechnologies.in/',
+    "author": "Bambus Technologies LLP",
+    "sequence": 1,
+    "website": "https://bambustechnologies.in/",
     "depends": ["base", "web", "mail", "sale", "contacts", "base_geolocalize"],
     "data": [
         "security/whatsapp_security.xml",
@@ -19,20 +25,21 @@
         "views/whatsapp_message_views.xml",
         "views/whatsapp_template_views.xml",
     ],
-    'assets': {
-        'web.assets_backend': [
-            'whatsapp_business/static/src/scss/*.scss',
-            'whatsapp_business/static/src/chatter_patch/*.js',
-            'whatsapp_business/static/src/chatter_patch/*.xml',
-            'whatsapp_business/static/src/variable_textfiled/*.xml',
-            'whatsapp_business/static/src/variable_textfiled/*.js',
-            'whatsapp_business/static/src/discuss_app/public_web/*.js',
-            'whatsapp_business/static/src/discuss_app/common/*.js',
-            'whatsapp_business/static/src/discuss_app/web/*.js',
+    "assets": {
+        "web.assets_backend": [
+            "whatsapp_business/static/src/scss/*.scss",
+            "whatsapp_business/static/src/chatter_patch/*.js",
+            "whatsapp_business/static/src/chatter_patch/*.xml",
+            "whatsapp_business/static/src/variable_textfiled/*.xml",
+            "whatsapp_business/static/src/variable_textfiled/*.js",
+            "whatsapp_business/static/src/discuss_app/public_web/*.js",
+            "whatsapp_business/static/src/discuss_app/common/*.js",
+            "whatsapp_business/static/src/discuss_app/web/*.js",
         ],
     },
-    "images": ['static/description/icon.png'],
+    "images": ["static/description/icon.png"],
     "installable": True,
-    "license": 'LGPL-3',
-    "application": True
+    "license": "LGPL-3",
+    "application": True,
+    "auto_install": False,
 }
