@@ -47,6 +47,55 @@ class PaymentTransaction(models.Model):
     ertipay_payment_reference = fields.Char(readonly=True, copy=False)
     ertipay_raw_response = fields.Json(readonly=True, copy=False)
 
+    def _create_payment(self):
+        """Create the accounting payment with an inbound electronic method.
+
+        Odoo's payment post-processing looks for the ``electronic`` inbound
+        payment method on the provider journal.  A journal selected after the
+        provider was installed does not necessarily have that method enabled,
+        in which case ``account.payment`` is created without a method line and
+        its constraint aborts the entire post-processing flow.
+
+        Ensure the standard line exists before delegating to Odoo.  Keeping the
+        line on the journal (rather than substituting a manual method on the
+        payment) preserves the normal online-payment accounting semantics.
+        """
+        for tx in self.filtered(lambda transaction: transaction.provider_code == 'ertipay'):
+            tx._ertipay_ensure_inbound_payment_method_line()
+        return super()._create_payment()
+
+    def _ertipay_ensure_inbound_payment_method_line(self):
+        """Enable Odoo's electronic inbound method on the provider journal."""
+        self.ensure_one()
+        journal = self.provider_id.journal_id
+        if not journal:
+            raise UserError(_(
+                'Please configure a payment journal on the Ertipay payment provider.'
+            ))
+
+        electronic_method = self.env['account.payment.method'].search([
+            ('code', '=', 'electronic'),
+            ('payment_type', '=', 'inbound'),
+        ], limit=1)
+        if not electronic_method:
+            raise UserError(_(
+                'The standard inbound electronic payment method is unavailable. '
+                'Please upgrade the Accounting application.'
+            ))
+
+        method_line = journal.inbound_payment_method_line_ids.filtered(
+            lambda line: line.payment_method_id == electronic_method
+        )
+        if not method_line:
+            self.env['account.payment.method.line'].create({
+                'journal_id': journal.id,
+                'payment_method_id': electronic_method.id,
+            })
+            _logger.info(
+                'Enabled the inbound electronic payment method on journal %s for Ertipay.',
+                journal.display_name,
+            )
+
     def _get_specific_processing_values(self, processing_values):
         res = super()._get_specific_processing_values(processing_values)
         if self.provider_code != 'ertipay':

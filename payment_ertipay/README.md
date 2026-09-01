@@ -121,6 +121,12 @@ total. The Landoc transaction amount is never replaced with this gateway total.
    and GST percentages.
 10. Register the appropriate public Odoo callback URL with Ertipay.
 
+The provider must have a payment journal. During successful transaction
+post-processing, the connector ensures that Odoo's standard inbound
+**Electronic** payment method is enabled on that journal. This prevents online
+payments from being created without a payment method line when a newly selected
+journal only has manual payment methods configured.
+
 Use **Enable API Debug Logs** only while diagnosing an integration. Logs show
 endpoints and sanitized payloads; access to Odoo server logs should remain
 restricted.
