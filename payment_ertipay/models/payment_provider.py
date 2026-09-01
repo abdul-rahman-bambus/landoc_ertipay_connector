@@ -18,8 +18,10 @@ class PaymentProvider(models.Model):
 
     code = fields.Selection(selection_add=[('ertipay', 'Ertipay')], ondelete={'ertipay': 'set default'})
     is_trn_charges_applied = fields.Boolean(default=False, string='Transaction Charges Applied')
-    trn_percentage = fields.Float(string='Transaction Percentage')
+    trn_percentage  = fields.Float(string='Transaction Percentage')
     trn_tax_percentage = fields.Float(string='Transaction Tax Percentage')
+
+
     ertipay_merchant_id = fields.Char(string='Merchant ID', groups='base.group_system')
     ertipay_email = fields.Char(string='Pay-In Email', groups='base.group_system')
     ertipay_api_secret = fields.Char(string='Pay-In API Secret', groups='base.group_system')
@@ -57,69 +59,53 @@ class PaymentProvider(models.Model):
     )
 
     def _calculate_total_payable(self, sale_id, is_partial):
-        """Return the checkout charge breakdown for a sale order.
+        sale_order = self.env['sale.order'].browse(sale_id)
 
-        This method is called from the public payment-method template, so invalid
-        or missing request parameters must produce no breakdown rather than an
-        access error. The payment transaction performs the authoritative charge
-        calculation again and stores a snapshot before contacting Ertipay.
-        """
-        self.ensure_one()
-        if self.code != 'ertipay' or not self.is_trn_charges_applied or not sale_id:
-            return {}
-        try:
-            sale_order = self.env['sale.order'].browse(int(sale_id)).exists()
-        except (TypeError, ValueError):
-            return {}
-        if not sale_order:
-            return {}
-
+        # Convert query parameter to boolean
         if isinstance(is_partial, str):
-            is_partial = is_partial.lower() in ('1', 'true', 'yes')
-        elif is_partial is None:
-            is_partial = bool(sale_order.require_payment)
+            is_partial = is_partial.lower() == 'true'
+
+        if is_partial == None and sale_order.require_payment and sale_order.require_payment:
+            is_partial = True
 
         amount = (
             sale_order._get_prepayment_required_amount()
             if is_partial
             else sale_order.amount_total
         )
-        values = {
-            key: float(value)
-            for key, value in self._ertipay_calculate_charges(amount).items()
-        }
-        values['currency'] = sale_order.currency_id
-        return values
 
-    def _ertipay_calculate_charges(self, amount):
-        """Calculate commission without changing the Landoc invoice amount."""
-        self.ensure_one()
-        amount = Decimal(str(amount or 0)).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-        if self.is_trn_charges_applied:
-            fee_percentage = Decimal(str(self.trn_percentage or 0))
-            gst_percentage = Decimal(str(self.trn_tax_percentage or 0))
-        else:
-            fee_percentage = gst_percentage = Decimal('0')
-        transaction_fee = (amount * fee_percentage / Decimal('100')).quantize(
-            Decimal('0.01'), rounding=ROUND_HALF_UP,
+        amount = Decimal(str(amount))
+        trn_percentage = Decimal(str(self.trn_percentage))
+        gst_percentage = Decimal(str(self.trn_tax_percentage))
+
+        # 1. Calculate raw values without quantize
+        transaction_fee_raw = amount * trn_percentage / Decimal("100")
+        gst_raw = transaction_fee_raw * gst_percentage / Decimal("100")
+
+        # 2. Derive individual fees and total from raw values
+        transaction_fee = transaction_fee_raw.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        gst = gst_raw.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        # 3. Sum the raw values first, then round the total
+        total = (amount + transaction_fee_raw + gst_raw).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+        _logger.info(
+            "Amount: %.2f | Transaction Fee (%.2f%%): %.2f | GST (%s%%): %.2f | Total: %.2f",
+            amount,
+            self.trn_percentage,
+            transaction_fee,
+            gst_percentage,
+            gst,
+            total,
         )
-        gst = (transaction_fee * gst_percentage / Decimal('100')).quantize(
-            Decimal('0.01'), rounding=ROUND_HALF_UP,
-        )
+
+
         return {
             'amount': amount,
-            'fee_percentage': fee_percentage,
-            'gst_percentage': gst_percentage,
             'transaction_fee': transaction_fee,
             'gst': gst,
-            'total': amount + transaction_fee + gst,
+            'total': total,
         }
-
-    @api.constrains('trn_percentage', 'trn_tax_percentage')
-    def _check_ertipay_charge_percentages(self):
-        for provider in self:
-            if provider.trn_percentage < 0 or provider.trn_tax_percentage < 0:
-                raise ValidationError(_('Ertipay transaction and tax percentages cannot be negative.'))
 
     @api.constrains('ertipay_encryption_key')
     def _check_ertipay_encryption_key(self):
@@ -164,14 +150,7 @@ class PaymentProvider(models.Model):
         if isinstance(payload, dict):
             sanitized = {}
             for key, value in payload.items():
-                if key.lower() in {
-                    'apipayinapisecret',
-                    'authorization',
-                    'token',
-                    'jwttoken',
-                    'accesstoken',
-                    'bearertoken',
-                } and value:
+                if key in ('apiPayinApiSecret', 'Authorization') and value:
                     sanitized[key] = self._ertipay_mask_sensitive(value)
                 else:
                     sanitized[key] = self._ertipay_sanitized_payload(value)
@@ -217,11 +196,7 @@ class PaymentProvider(models.Model):
         self._ertipay_validate_configuration()
         refresh_at = fields.Datetime.now() + timedelta(minutes=5)
         if self.ertipay_token and self.ertipay_token_expiry and self.ertipay_token_expiry > refresh_at:
-            self._ertipay_log_api(
-                'Using cached bearer token expiring at %s: %s',
-                self.ertipay_token_expiry,
-                self._ertipay_mask_sensitive(self.ertipay_token),
-            )
+            self._ertipay_log_api('Using cached bearer token expiring at %s: %s', self.ertipay_token_expiry, self.ertipay_token)
             return self.ertipay_token
 
         endpoint = '%s/token' % self._ertipay_get_base_url()

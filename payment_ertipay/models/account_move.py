@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import _, fields, models
 
 
 class AccountMove(models.Model):
@@ -19,21 +19,8 @@ class AccountMove(models.Model):
     )
 
     ertipay_total_paid = fields.Monetary(
-        string="Requested Gateway Total",
+        string="Total Paid",
         currency_field="currency_id",
-        readonly=True,
-        copy=False,
-    )
-
-    ertipay_received_amount = fields.Monetary(
-        string='Gateway Confirmed Total',
-        currency_field='currency_id',
-        readonly=True,
-        copy=False,
-    )
-
-    ertipay_amount_mismatch = fields.Boolean(
-        string='Gateway Amount Mismatch',
         readonly=True,
         copy=False,
     )

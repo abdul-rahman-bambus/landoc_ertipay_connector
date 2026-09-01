@@ -30,12 +30,7 @@ class ErtipayController(http.Controller):
     def ertipay_return(self, **kwargs):
         reference = kwargs.get('txnRefId') or kwargs.get('reference')
         if reference:
-            tx = request.env['payment.transaction'].sudo().search([
-                ('provider_code', '=', 'ertipay'),
-                '|',
-                ('reference', '=', reference),
-                ('ertipay_txn_ref_id', '=', reference),
-            ], limit=1)
+            tx = request.env['payment.transaction'].sudo().search([('reference', '=', reference), ('provider_code', '=', 'ertipay')], limit=1)
             if tx and tx.state not in ('done', 'cancel', 'error'):
                 try:
                     status_data = tx._ertipay_fetch_status()
@@ -56,8 +51,6 @@ class ErtipayController(http.Controller):
         signature = request.httprequest.headers.get('x-erti-signature') or request.httprequest.headers.get('X-ERTI-SIGNATURE')
         timestamp = request.httprequest.headers.get('x-erti-timestamp') or request.httprequest.headers.get('X-ERTI-TIMESTAMP')
         encrypted_data = payload.get('data') or payload.get('encryptedData')
-        if isinstance(encrypted_data, dict):
-            encrypted_data = encrypted_data.get('encryptedData') or encrypted_data.get('data')
         if not signature or not timestamp or not encrypted_data:
             return {'success': False, 'message': 'Missing Ertipay callback security fields'}
 
@@ -77,10 +70,6 @@ class ErtipayController(http.Controller):
             return {'success': False, 'message': 'Invalid callback signature'}
 
         notification_data = provider._ertipay_decrypt(encrypted_data)
-        provider._ertipay_log_api(
-            'Decrypted callback response: %s',
-            provider._ertipay_sanitized_payload(notification_data),
-        )
         data = notification_data.get('data', notification_data)
         tx = request.env['payment.transaction'].sudo()._get_tx_from_notification_data('ertipay', data)
         tx._process_notification_data(data)
