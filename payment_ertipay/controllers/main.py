@@ -29,8 +29,14 @@ class ErtipayController(http.Controller):
     @http.route('/payment/ertipay/return', type='http', auth='public', website=True, csrf=False)
     def ertipay_return(self, **kwargs):
         reference = kwargs.get('txnRefId') or kwargs.get('reference')
+        _logger.info('Received Ertipay browser return for reference %s.', reference or '<missing>')
         if reference:
-            tx = request.env['payment.transaction'].sudo().search([('reference', '=', reference), ('provider_code', '=', 'ertipay')], limit=1)
+            tx = request.env['payment.transaction'].sudo().search([
+                ('provider_code', '=', 'ertipay'),
+                '|',
+                ('reference', '=', reference),
+                ('ertipay_txn_ref_id', '=', reference),
+            ], limit=1)
             if tx and tx.state not in ('done', 'cancel', 'error'):
                 try:
                     status_data = tx._ertipay_fetch_status()
@@ -38,6 +44,14 @@ class ErtipayController(http.Controller):
                     tx._process_notification_data(data)
                 except Exception:
                     _logger.exception('Unable to refresh Ertipay transaction status for %s', reference)
+            elif not tx:
+                _logger.warning('No Ertipay transaction found for browser return reference %s.', reference)
+            else:
+                _logger.info(
+                    'Ertipay browser return matched transaction %s in final state %s.',
+                    tx.reference,
+                    tx.state,
+                )
         return request.redirect('/payment/status')
 
     @http.route('/payment/ertipay/callback', type='json', auth='public', csrf=False, methods=['POST'])
