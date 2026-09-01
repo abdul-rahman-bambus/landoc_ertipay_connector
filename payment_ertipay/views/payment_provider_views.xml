@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="payment_provider_form_ertipay" model="ir.ui.view">
+        <field name="name">payment.provider.form.ertipay</field>
+        <field name="model">payment.provider</field>
+        <field name="inherit_id" ref="payment.payment_provider_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='provider_credentials']" position="inside">
+                <group string="Ertipay Credentials" invisible="code != 'ertipay'">
+                    <field name="ertipay_base_url" required="code == 'ertipay'"/>
+                    <field name="ertipay_merchant_id" required="code == 'ertipay'"/>
+                    <field name="ertipay_email" required="code == 'ertipay'"/>
+                    <field name="ertipay_api_secret" password="True" required="code == 'ertipay'"/>
+                    <field name="ertipay_encryption_key" password="True" required="code == 'ertipay'"/>
+                    <field name="ertipay_vpa" required="code == 'ertipay'"/>
+                    <field name="ertipay_channel_type" required="code == 'ertipay'"/>
+                    <field name="ertipay_init_mode" required="code == 'ertipay'"/>
+                    <field name="is_published" widget="boolean_toggle" string="Published on Website"/>
+                    <field name="ertipay_token" readonly="1" password="True"/>
+                    <field name="ertipay_token_expiry" readonly="1"/>
+                    <field name="ertipay_debug_logging"/>
+                </group>
+            </xpath>
+            <xpath expr="//page[@name='configuration']" position="before">
+                <page string="Transaction Charges">
+                    <group>
+                        <group>
+                            <field name="is_trn_charges_applied"/>
+                            <label for="trn_percentage" invisible="not is_trn_charges_applied"/>
+                            <div id="trn_percentage" invisible="not is_trn_charges_applied">
+                                <field name="trn_percentage"  style="width: 5rem"/>%
+                            </div>
+
+                            <label for="trn_tax_percentage" invisible="not is_trn_charges_applied"/>
+                            <div id="trn_tax_percentage" invisible="not is_trn_charges_applied">
+                                <field name="trn_tax_percentage"  style="width: 5rem"/>%
+                            </div>
+                        </group>
+                    </group>
+
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

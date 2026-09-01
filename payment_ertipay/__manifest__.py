@@ -1,0 +1,26 @@
+{
+    'name': 'Payment Provider: Ertipay',
+    'version': '18.0.1.0.0',
+    'category': 'Accounting/Payment Providers',
+    'summary': 'Accept UPI payments through the Ertipay pay-in gateway.',
+    'author': 'Bambus Technologies LLP',
+    'website': 'https://bambustechnologies.in/',
+    'depends': ['payment', 'website_payment', 'account'],
+    'assets': {
+        'web.assets_frontend': [
+            'payment_ertipay/static/src/css/ertipay.css',
+        ],
+    },
+    'data': [
+        'views/payment_ertipay_templates.xml',
+        'views/payment_provider_views.xml',
+        'views/payment_transaction_views.xml',
+        'data/account_payment_method_data.xml',
+        'data/payment_provider_data.xml',
+        'data/payment_method_data.xml',
+    ],
+    'license': 'OPL-1',
+    'installable': True,
+    'auto_install': False,
+    'application': False,
+}

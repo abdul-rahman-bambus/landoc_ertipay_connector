@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="payment_method_ertipay_upi" model="payment.method">
+        <field name="name">Ertipay</field>
+        <field name="code">ertipay_upi</field>
+        <field name="sequence">20</field>
+        <field name="image">iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAZUlEQVR42u3WQQkAIBREQW/eBZOYyS5WsI3NNIP8gwizvAJz21T7CrZni1RGjpQAAAAAAAAAAAAAAAAAAAAAAAAAXgD25wMAAAAAAPgb4AsBAAAAAAAAAAAAAAAAAAAAAAAA3HcAoUnlamuyGekAAAAASUVORK5CYII=</field>
+        <field name="provider_ids" eval="[(4, ref('payment_ertipay.payment_provider_ertipay'))]"/>
+    </record>
+</odoo>
