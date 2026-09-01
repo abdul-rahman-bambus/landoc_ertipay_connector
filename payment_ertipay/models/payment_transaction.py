@@ -88,7 +88,10 @@ class PaymentTransaction(models.Model):
             'txnRefId': txn_ref_id,
             'txnAmt': '%.2f' % total["total"],
             'txnRemarks': 'Payment',
-            'refUrl': '%s/payment/ertipay/return' % base_url.rstrip('/'),
+            'refUrl': '%s/payment/ertipay/return?txnRefId=%s' % (
+                base_url.rstrip('/'),
+                txn_ref_id,
+            ),
         }
         provider._ertipay_log_api('UPI plain request payload before encryption: %s', payload)
         encrypted_payload = provider._ertipay_encrypt(payload)
